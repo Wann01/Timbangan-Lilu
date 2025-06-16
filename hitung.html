@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Timbangan dengan Nota</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --danger-color: #e74c3c;
+            --danger-hover: #c0392b;
+            --success-color: #27ae60;
+            --success-hover: #219653;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #2c3e50;
+            --white: #ffffff;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--light-gray);
+            color: #333;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--dark-gray);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+            margin: 15px 0;
+            color: var(--dark-gray);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        #calculate, #save {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        #calculate:hover, #save:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        #reset-day {
+            background-color: var(--danger-color);
+            color: var(--white);
+        }
+        
+        #reset-day:hover {
+            background-color: var(--danger-hover);
+        }
+        
+        .total-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f4fc;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--medium-gray);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid var(--medium-gray);
+        }
+        
+        th {
+            background-color: var(--medium-gray);
+            font-weight: 600;
+        }
+        
+        .summary-row {
+            font-weight: bold;
+            background-color: var(--medium-gray);
+        }
+        
+        .delete-btn {
+            background-color: var(--danger-color);
+            color: var(--white);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .delete-btn:hover {
+            background-color: var(--danger-hover);
+        }
+        
+        .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .export-btn {
+            background-color: var(--success-color);
+            color: var(--white);
+            padding: 10px;
+        }
+        
+        .export-btn:hover {
+            background-color: var(--success-hover);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: var(--light-gray);
+            border: 1px solid var(--medium-gray);
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background-color: var(--white);
+            border-bottom: 1px solid var(--white);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Styles untuk nota cetak */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-nota, #print-nota * {
+                visibility: visible;
+            }
+            #print-nota {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 10px;
+                font-family: Arial, sans-serif;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        #print-nota {
+            display: none;
+            border: 1px solid #000;
+            padding: 15px;
+            width: 80mm;
+            margin: 20px auto;
+            background: white;
+            font-family: Arial, sans-serif;
+            page-break-after: always;
+        }
+
+        .nota-header {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+        }
+
+        .nota-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .nota-detail {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nota-label {
+            font-weight: bold;
+        }
+
+        .nota-divider {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+
+        .nota-total {
+            font-weight: bold;
+            text-align: right;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .nota-footer {
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+            font-size: 12px;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                padding: 20px;
+                max-width: 800px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .button-group {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .export-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .button-group, .export-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            button, .export-btn {
+                width: 100%;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                border-radius: 0;
+                margin-right: 0;
+                border-bottom: 1px solid var(--medium-gray);
+            }
+
+            #print-nota {
+                width: 100%;
+                padding: 10px;
+            }
+        }
+        /* Tambahan untuk printer bluetooth */
+        @media print {
+            body {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 12px !important;
+            }
+            #print-nota {
+                width: 100% !important;
+                padding: 5px !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .nota-title {
+                font-size: 16px !important;
+            }
+            .nota-detail {
+                margin: 3px 0 !important;
+            }
+            .nota-footer {
+                font-size: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kalkulator Timbangan dengan Nota</h1>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('current')">Transaksi Hari Ini</div>
+            <div class="tab" onclick="switchTab('history')">Riwayat Transaksi</div>
+        </div>
+
+        <!-- Current Transactions Tab -->
+        <div id="current-tab" class="tab-content active">
+            <div class="form-group">
+                <label for="price">Harga per Kilogram (Rp):</label>
+                <input type="number" id="price" value="10000" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="weight">Berat (Kg):</label>
+                <input type="number" id="weight" step="0.01" min="0" placeholder="Masukkan berat barang">
+            </div>
+            
+            <div class="button-group">
+                <button id="calculate">Hitung & Cetak Nota</button>
+                <button id="save">Simpan Transaksi</button>
+                <button id="reset-day">Reset Hari Ini</button>
+            </div>
+            
+            <div class="total-section">
+                <p>Total Hari Ini: Rp <span id="daily-total">0</span></p>
+            </div>
+            
+            <h2>Daftar Transaksi Hari Ini</h2>
+            <div class="table-container">
+                <table id="transactions">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Berat (Kg)</th>
+                            <th>Harga/Kg (Rp)</th>
+                            <th>Total (Rp)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Transaksi akan ditampilkan di sini -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="summary-row">
+                            <td colspan="1">Total</td>
+                            <td id="total-kg">0.00</td>
+                            <td>-</td>
+                            <td id="total-rp">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="export-buttons">
+                <button id="export-excel" class="export-btn">Export ke Excel</button>
+                <button id="export-pdf" class="export-btn">Export ke PDF</button>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-content">
+            <h2>Riwayat Transaksi</h2>
+            <div class="table-container">
+                <table id="history-transactions">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Jumlah Transaksi</th>
+                            <th>Total Berat (Kg)</th>
+                            <th>Total Nilai (Rp)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Riwayat transaksi akan ditampilkan di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elemen untuk nota cetak -->
+    <div id="print-nota">
+        <div class="nota-header">
+            <div class="nota-title">TOKO TIMBANGAN ABC</div>
+            <p>Jl. Contoh No. 123, Kota Anda</p>
+            <p>Telp: 0812-3456-7890</p>
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">Tanggal:</span>
+            <span id="nota-date"></span>
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">No. Nota:</span>
+            <span id="nota-number"></span>
+        </div>
+        <div class="nota-divider"></div>
+        <div class="nota-detail">
+            <span class="nota-label">Berat:</span>
+            <span id="nota-weight"></span> Kg
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">Harga/Kg:</span>
+            Rp <span id="nota-price"></span>
+        </div>
+        <div class="nota-divider"></div>
+        <div class="nota-total">
+            TOTAL: Rp <span id="nota-total"></span>
+        </div>
+        <div class="nota-footer">
+            Terima kasih atas kunjungan Anda
+        </div>
+    </div>
+
+    <script>
+        // Inisialisasi variabel
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let dailyTotal = parseFloat(localStorage.getItem('dailyTotal')) || 0;
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let transactionCounter = parseInt(localStorage.getItem('transactionCounter')) || 1;
+        
+        // Elemen DOM
+        const priceInput = document.getElementById('price');
+        const weightInput = document.getElementById('weight');
+        const calculateBtn = document.getElementById('calculate');
+        const saveBtn = document.getElementById('save');
+        const resetBtn = document.getElementById('reset-day');
+        const dailyTotalSpan = document.getElementById('daily-total');
+        const transactionsTable = document.getElementById('transactions').getElementsByTagName('tbody')[0];
+        const totalKgCell = document.getElementById('total-kg');
+        const totalRpCell = document.getElementById('total-rp');
+        const exportExcelBtn = document.getElementById('export-excel');
+        const exportPdfBtn = document.getElementById('export-pdf');
+        const historyTable = document.getElementById('history-transactions').getElementsByTagName('tbody')[0];
+        
+        // Tampilkan total dan transaksi saat pertama kali load
+        updateDailyTotal();
+        renderTransactions();
+        renderHistory();
+        
+        // Event listeners
+        calculateBtn.addEventListener('click', calculateAndPrint);
+        saveBtn.addEventListener('click', saveTransaction);
+        resetBtn.addEventListener('click', resetDay);
+        exportExcelBtn.addEventListener('click', exportToExcel);
+        exportPdfBtn.addEventListener('click', exportToPdf);
+        
+        // Fungsi untuk berpindah tab
+        function switchTab(tabName) {
+            // Sembunyikan semua tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Nonaktifkan semua tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Aktifkan tab yang dipilih
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Aktifkan tombol tab yang dipilih
+            const tabs = document.querySelectorAll('.tab');
+            if (tabName === 'current') {
+                tabs[0].classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+            }
+        }
+        
+        // Fungsi hitung dan cetak nota
+        function calculateAndPrint() {
+            const price = parseFloat(priceInput.value);
+            const weight = parseFloat(weightInput.value);
+            
+            if (isNaN(weight) || weight <= 0) {
+                alert('Masukkan berat yang valid');
+                return;
+            }
+            
+            const total = price * weight;
+            
+            // Format tanggal dan waktu sekarang
+            const now = new Date();
+            const dateString = now.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Update nota
+            document.getElementById('nota-date').textContent = dateString;
+            document.getElementById('nota-number').textContent = 'NOTA-' + now.getFullYear() + (now.getMonth()+1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0') + '-' + transactionCounter.toString().padStart(4, '0');
+            document.getElementById('nota-weight').textContent = weight.toFixed(2);
+            document.getElementById('nota-price').textContent = price.toLocaleString('id-ID');
+            document.getElementById('nota-total').textContent = total.toLocaleString('id-ID');
+            
+            // Cetak nota
+            printNota();
+            
+            // Auto-save jika diperlukan
+            if (confirm(`Total: Rp ${total.toLocaleString('id-ID')}\nSimpan transaksi ini?`)) {
+                saveTransaction();
+            }
+        }
+        
+        // Fungsi untuk mencetak nota
+        function printNota() {
+            const notaElement = document.getElementById('print-nota');
+            
+            // Tampilkan nota sebelum mencetak
+            notaElement.style.display = 'block';
+            
+            // Set timeout untuk memastikan elemen sudah ditampilkan sebelum mencetak
+            setTimeout(() => {
+                window.print();
+                
+                // Sembunyikan nota setelah mencetak
+                setTimeout(() => {
+                    notaElement.style.display = 'none';
+                }, 100);
+            }, 100);
+        }
+        
+        // Fungsi simpan transaksi
+        function saveTransaction() {
+            const price = parseFloat(priceInput.value);
+            const weight = parseFloat(weightInput.value);
+            
+            if (isNaN(weight) || weight <= 0) {
+                alert('Masukkan berat yang valid');
+                return;
+            }
+            
+            const total = price * weight;
+            const transaction = {
+                id: Date.now(),
+                weight,
+                price,
+                total,
+                timestamp: new Date().toISOString()
+            };
+            
+            transactions.push(transaction);
+            dailyTotal += total;
+            transactionCounter++;
+            
+            // Simpan ke localStorage
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('dailyTotal', dailyTotal.toString());
+            localStorage.setItem('transactionCounter', transactionCounter.toString());
+            
+            // Update tampilan
+            updateDailyTotal();
+            renderTransactions();
+            
+            // Reset input berat
+            weightInput.value = '';
+            weightInput.focus();
+        }
+        
+        // Fungsi hapus transaksi
+        function deleteTransaction(id) {
+            const index = transactions.findIndex(t => t.id === id);
+            if (index !== -1) {
+                dailyTotal -= transactions[index].total;
+                transactions.splice(index, 1);
+                
+                // Update localStorage
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('dailyTotal', dailyTotal.toString());
+                
+                // Update tampilan
+                updateDailyTotal();
+                renderTransactions();
+            }
+        }
+        
+        // Fungsi reset hari
+        function resetDay() {
+            if (transactions.length === 0) {
+                alert('Tidak ada transaksi untuk direset');
+                return;
+            }
+
+            if (confirm('Apakah Anda yakin ingin mereset transaksi hari ini? Data akan disimpan di riwayat.')) {
+                // Simpan ke riwayat sebelum direset
+                const today = new Date().toISOString().split('T')[0];
+                const totalWeight = transactions.reduce((sum, t) => sum + t.weight, 0);
+                const totalValue = transactions.reduce((sum, t) => sum + t.total, 0);
+                
+                const dailyRecord = {
+                    date: today,
+                    transactionCount: transactions.length,
+                    totalWeight: parseFloat(totalWeight.toFixed(2)),
+                    totalValue: totalValue
+                };
+                
+                history.push(dailyRecord);
+                localStorage.setItem('history', JSON.stringify(history));
+                
+                // Reset transaksi hari ini
+                transactions = [];
+                dailyTotal = 0;
+                
+                // Update localStorage
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('dailyTotal', dailyTotal.toString());
+                
+                // Update tampilan
+                updateDailyTotal();
+                renderTransactions();
+                renderHistory();
+                
+                alert('Transaksi hari ini telah disimpan di riwayat dan direset');
+            }
+        }
+        
+        // Fungsi hapus riwayat
+        function deleteHistory(date) {
+            if (confirm('Apakah Anda yakin ingin menghapus riwayat transaksi untuk tanggal ' + date + '?')) {
+                // Cari index data yang akan dihapus
+                const index = history.findIndex(record => record.date === date);
+                
+                if (index !== -1) {
+                    // Hapus hanya 1 data pada index yang ditemukan
+                    history.splice(index, 1);
+                    localStorage.setItem('history', JSON.stringify(history));
+                    renderHistory();
+                }
+            }
+        }
+
+        // Tampilkan riwayat transaksi
+        function renderHistory() {
+            historyTable.innerHTML = '';
+            
+            if (history.length === 0) {
+                const row = historyTable.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 5;
+                cell.className = 'no-data';
+                cell.textContent = 'Belum ada riwayat transaksi';
+                return;
+            }
+            
+            // Urutkan riwayat dari yang terbaru
+            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            history.forEach(record => {
+                const row = historyTable.insertRow();
+                
+                row.insertCell().textContent = record.date;
+                row.insertCell().textContent = record.transactionCount;
+                row.insertCell().textContent = record.totalWeight.toFixed(2);
+                row.insertCell().textContent = record.totalValue.toLocaleString('id-ID');
+                
+                const actionCell = row.insertCell();
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Hapus';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteHistory(record.date);
+                actionCell.appendChild(deleteBtn);
+            });
+        }
+        
+        // Update total harian
+        function updateDailyTotal() {
+            dailyTotalSpan.textContent = dailyTotal.toLocaleString('id-ID');
+        }
+        
+        // Tampilkan transaksi dan hitung total
+        function renderTransactions() {
+            transactionsTable.innerHTML = '';
+            
+            let totalKg = 0;
+            let totalRp = 0;
+            
+            if (transactions.length === 0) {
+                const row = transactionsTable.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 5;
+                cell.className = 'no-data';
+                cell.textContent = 'Belum ada transaksi hari ini';
+                
+                // Update total footer
+                totalKgCell.textContent = '0.00';
+                totalRpCell.textContent = '0';
+                return;
+            }
+            
+            // Urutkan transaksi dari yang terbaru
+            transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            transactions.forEach((transaction, index) => {
+                const row = transactionsTable.insertRow();
+                
+                row.insertCell().textContent = index + 1;
+                row.insertCell().textContent = transaction.weight.toFixed(2);
+                row.insertCell().textContent = transaction.price.toLocaleString('id-ID');
+                row.insertCell().textContent = transaction.total.toLocaleString('id-ID');
+                
+                const deleteCell = row.insertCell();
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Hapus';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteTransaction(transaction.id);
+                deleteCell.appendChild(deleteBtn);
+                
+                // Akumulasi total
+                totalKg += transaction.weight;
+                totalRp += transaction.total;
+            });
+            
+            // Update total footer
+            totalKgCell.textContent = totalKg.toFixed(2);
+            totalRpCell.textContent = totalRp.toLocaleString('id-ID');
+        }
+        
+        // Fungsi export ke Excel
+        function exportToExcel() {
+            if (transactions.length === 0) {
+                alert('Tidak ada data untuk diexport');
+                return;
+            }
+            
+            // Siapkan data
+            const data = [
+                ['No', 'Berat (Kg)', 'Harga/Kg (Rp)', 'Total (Rp)', 'Waktu Transaksi'],
+                ...transactions.map((t, i) => [
+                    i + 1,
+                    t.weight.toFixed(2),
+                    t.price,
+                    t.total,
+                    new Date(t.timestamp).toLocaleString('id-ID')
+                ]),
+                ['Total', 
+                 transactions.reduce((sum, t) => sum + t.weight, 0).toFixed(2),
+                 '',
+                 transactions.reduce((sum, t) => sum + t.total, 0),
+                 ''
+                ]
+            ];
+            
+            // Buat workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Tambah worksheet ke workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Transaksi Timbangan");
+            
+            // Export ke file
+            const date = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Transaksi_Timbangan_${date}.xlsx`);
+        }
+        
+        // Fungsi export ke PDF
+        function exportToPdf() {
+            if (transactions.length === 0) {
+                alert('Tidak ada data untuk diexport');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Judul
+            doc.setFontSize(18);
+            doc.text('Laporan Transaksi Timbangan', 105, 15, { align: 'center' });
+            
+            // Tanggal
+            doc.setFontSize(12);
+            const date = new Date().toLocaleDateString('id-ID');
+            doc.text(`Tanggal: ${date}`, 14, 25);
+            
+            // Header tabel
+            const headers = [['No', 'Berat (Kg)', 'Harga/Kg (Rp)', 'Total (Rp)', 'Waktu']];
+            
+            // Data tabel
+            const data = transactions.map((t, i) => [
+                i + 1,
+                t.weight.toFixed(2),
+                t.price.toLocaleString('id-ID'),
+                t.total.toLocaleString('id-ID'),
+                new Date(t.timestamp).toLocaleTimeString('id-ID')
+            ]);
+            
+            // Total
+            const totalKg = transactions.reduce((sum, t) => sum + t.weight, 0).toFixed(2);
+            const totalRp = transactions.reduce((sum, t) => sum + t.total, 0);
+            
+            // Buat tabel
+            doc.autoTable({
+                startY: 30,
+                head: headers,
+                body: data,
+                foot: [['Total', totalKg, '', totalRp.toLocaleString('id-ID'), '']],
+                didDrawPage: function(data) {
+                    // Footer
+                    doc.setFontSize(10);
+                    doc.text('Dokumen dibuat oleh Sistem Timbangan Digital', 
+                            data.settings.margin.left, 
+                            doc.internal.pageSize.height - 10);
+                },
+                styles: {
+                    cellPadding: 5,
+                    fontSize: 10,
+                    valign: 'middle'
+                },
+                headStyles: {
+                    fillColor: [52, 152, 219],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                footStyles: {
+                    fillColor: [52, 152, 219],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                }
+            });
+            
+            // Simpan PDF
+            doc.save(`Transaksi_Timbangan_${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+
+        // Fungsi untuk mencetak nota (dimodifikasi untuk printer bluetooth)
+        function printNota() {
+            const notaElement = document.getElementById('print-nota');
+            
+            // Tampilkan nota sebelum mencetak
+            notaElement.style.display = 'block';
+            
+            // Buat iframe untuk mencetak
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.width = '80mm';
+            iframe.style.height = '100%';
+            iframe.style.left = '-1000px';
+            iframe.style.top = '0';
+            iframe.style.border = 'none';
+            
+            document.body.appendChild(iframe);
+            
+            // Salin konten nota ke iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Nota Timbangan</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            width: 80mm;
+                            margin: 0;
+                            padding: 5px;
+                            font-size: 12px;
+                        }
+                        .nota-header {
+                            text-align: center;
+                            margin-bottom: 5px;
+                            border-bottom: 1px dashed #000;
+                            padding-bottom: 5px;
+                        }
+                        .nota-title {
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-bottom: 3px;
+                        }
+                        .nota-detail {
+                            margin: 3px 0;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .nota-label {
+                            font-weight: bold;
+                        }
+                        .nota-divider {
+                            border-top: 1px dashed #000;
+                            margin: 5px 0;
+                        }
+                        .nota-total {
+                            font-weight: bold;
+                            text-align: right;
+                            font-size: 14px;
+                            margin-top: 5px;
+                        }
+                        .nota-footer {
+                            text-align: center;
+                            margin-top: 10px;
+                            font-style: italic;
+                            font-size: 10px;
+                        }
+                        @page {
+                            size: 80mm auto;
+                            margin: 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${notaElement.innerHTML}
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+            
+            // Fokus ke iframe dan cetak
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                
+                // Hapus iframe setelah mencetak
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    notaElement.style.display = 'none';
+                }, 1000);
+            }, 500);
+        }
+    </script>
+</body>
+</html>
