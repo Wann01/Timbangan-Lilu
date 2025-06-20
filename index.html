@@ -377,9 +377,279 @@
                 font-size: 10px !important;
             }
         }
+
+        /* Tambahan CSS untuk notifikasi */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            max-width: 90%;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            transform: translateX(120%);
+            animation: slideIn 0.5s forwards;
+            transition: all 0.3s ease;
+        }
+
+        .notification.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+
+        .notification.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 5px solid #ffc107;
+        }
+
+        .notification.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 5px solid #17a2b8;
+        }
+
+        .notification-icon {
+            margin-right: 15px;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex-grow: 1;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .notification-message {
+            font-size: 14px;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: inherit;
+            margin-left: 10px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        .notification-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background-color: rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        .notification-progress-bar {
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+            width: 100%;
+            animation: progressBar 5s linear forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            to {
+                transform: translateX(120%);
+            }
+        }
+
+        @keyframes progressBar {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        /* Modal konfirmasi */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-message {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-cancel {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+
+        .modal-btn-cancel:hover {
+            background-color: #e0e0e0;
+        }
+
+        .modal-btn-confirm {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .modal-btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .modal-btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
     </style>
 </head>
 <body>
+    <!-- Container untuk notifikasi -->
+    <div class="notification-container" id="notification-container"></div>
+
+    <!-- Modal konfirmasi -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Konfirmasi</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" id="confirm-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="modal-cancel">Batal</button>
+                <button class="modal-btn modal-btn-confirm" id="modal-confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal konfirmasi danger -->
+    <div class="modal-overlay" id="danger-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Peringatan</h3>
+                <button class="modal-close" id="danger-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" id="danger-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" id="danger-modal-cancel">Batal</button>
+                <button class="modal-btn modal-btn-danger" id="danger-modal-confirm">Ya</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>Kalkulator Timbangan dengan Nota</h1>
 
@@ -469,8 +739,8 @@
     <!-- Elemen untuk nota cetak -->
     <div id="print-nota">
         <div class="nota-header">
-            <div class="nota-title">TOKO TIMBANGAN ABC</div>
-            <p>Jl. Contoh No. 123, Kota Anda</p>
+            <div class="nota-title">TOKO TIMBANGAN</div>
+            <p>Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</p>
             <p>Telp: 0812-3456-7890</p>
         </div>
         <div class="nota-detail">
@@ -556,13 +826,142 @@
             }
         }
         
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(type, title, message, duration = 5000) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            // Ikon berdasarkan jenis notifikasi
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = '✓';
+                    break;
+                case 'error':
+                    icon = '✗';
+                    break;
+                case 'warning':
+                    icon = '⚠';
+                    break;
+                case 'info':
+                    icon = 'ℹ';
+                    break;
+            }
+            
+            notification.innerHTML = `
+                <div class="notification-icon">${icon}</div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+                <button class="notification-close">&times;</button>
+                <div class="notification-progress">
+                    <div class="notification-progress-bar"></div>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Animasi keluar setelah durasi tertentu
+            const timer = setTimeout(() => {
+                notification.style.animation = 'slideOut 0.5s forwards';
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, duration);
+            
+            // Tombol close
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                clearTimeout(timer);
+                notification.style.animation = 'slideOut 0.5s forwards';
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            });
+        }
+
+        // Fungsi untuk menampilkan modal konfirmasi
+        function showConfirm(message, callback) {
+            const modal = document.getElementById('confirm-modal');
+            const messageEl = document.getElementById('confirm-message');
+            const confirmBtn = document.getElementById('modal-confirm');
+            const cancelBtn = document.getElementById('modal-cancel');
+            const closeBtn = document.getElementById('modal-close');
+            
+            messageEl.innerHTML = message;
+            modal.classList.add('active');
+            
+            const handleConfirm = () => {
+                modal.classList.remove('active');
+                callback(true);
+                // Hapus event listener setelah digunakan
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+                closeBtn.removeEventListener('click', handleCancel);
+            };
+            
+            const handleCancel = () => {
+                modal.classList.remove('active');
+                callback(false);
+                // Hapus event listener setelah digunakan
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+                closeBtn.removeEventListener('click', handleCancel);
+            };
+            
+            confirmBtn.addEventListener('click', handleConfirm);
+            cancelBtn.addEventListener('click', handleCancel);
+            closeBtn.addEventListener('click', handleCancel);
+        }
+
+        // Fungsi untuk menampilkan modal konfirmasi danger
+        function showDangerConfirm(message, callback) {
+            const modal = document.getElementById('danger-modal');
+            const messageEl = document.getElementById('danger-message');
+            const confirmBtn = document.getElementById('danger-modal-confirm');
+            const cancelBtn = document.getElementById('danger-modal-cancel');
+            const closeBtn = document.getElementById('danger-modal-close');
+            
+            messageEl.textContent = message;
+            modal.classList.add('active');
+            
+            const handleConfirm = () => {
+                modal.classList.remove('active');
+                callback(true);
+                // Hapus event listener setelah digunakan
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+                closeBtn.removeEventListener('click', handleCancel);
+            };
+            
+            const handleCancel = () => {
+                modal.classList.remove('active');
+                callback(false);
+                // Hapus event listener setelah digunakan
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+                closeBtn.removeEventListener('click', handleCancel);
+            };
+            
+            confirmBtn.addEventListener('click', handleConfirm);
+            cancelBtn.addEventListener('click', handleCancel);
+            closeBtn.addEventListener('click', handleCancel);
+        }
+        
         // Fungsi hitung dan cetak nota
         function calculateAndPrint() {
             const price = parseFloat(priceInput.value);
             const weight = parseFloat(weightInput.value);
             
-            if (isNaN(weight) || weight <= 0) {
-                alert('Masukkan berat yang valid');
+            if (isNaN(weight)) {
+                showNotification('error', 'Kesalahan', 'Masukkan berat yang valid');
+                return;
+            }
+            
+            if (weight <= 0) {
+                showNotification('error', 'Kesalahan', 'Berat harus lebih dari 0');
                 return;
             }
             
@@ -588,10 +987,12 @@
             // Cetak nota
             printNota();
             
-            // Auto-save jika diperlukan
-            if (confirm(`Total: Rp ${total.toLocaleString('id-ID')}\nSimpan transaksi ini?`)) {
-                saveTransaction();
-            }
+            // Tampilkan konfirmasi untuk menyimpan transaksi
+            showConfirm(`Total: Rp ${total.toLocaleString('id-ID')}<br>Simpan transaksi ini?`, (confirmed) => {
+                if (confirmed) {
+                    saveTransaction();
+                }
+            });
         }
         
         // Fungsi untuk mencetak nota
@@ -601,15 +1002,94 @@
             // Tampilkan nota sebelum mencetak
             notaElement.style.display = 'block';
             
-            // Set timeout untuk memastikan elemen sudah ditampilkan sebelum mencetak
+            // Buat iframe untuk mencetak
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.width = '58mm';
+            iframe.style.height = '100%';
+            iframe.style.left = '-1000px';
+            iframe.style.top = '0';
+            iframe.style.border = 'none';
+            
+            document.body.appendChild(iframe);
+            
+            // Salin konten nota ke iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Nota Timbangan</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            width: 80mm;
+                            margin: 0;
+                            padding: 5px;
+                            font-size: 12px;
+                        }
+                        .nota-header {
+                            text-align: center;
+                            margin-bottom: 5px;
+                            border-bottom: 1px dashed #000;
+                            padding-bottom: 5px;
+                        }
+                        .nota-title {
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-bottom: 3px;
+                        }
+                        .nota-detail {
+                            margin: 3px 0;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .nota-label {
+                            font-weight: bold;
+                        }
+                        .nota-divider {
+                            border-top: 1px dashed #000;
+                            margin: 5px 0;
+                        }
+                        .nota-total {
+                            font-weight: bold;
+                            text-align: right;
+                            font-size: 14px;
+                            margin-top: 5px;
+                        }
+                        .nota-footer {
+                            text-align: center;
+                            margin-top: 10px;
+                            font-style: italic;
+                            font-size: 10px;
+                        }
+                        @page {
+                            size: 80mm auto;
+                            margin: 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${notaElement.innerHTML}
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+            
+            // Fokus ke iframe dan cetak
             setTimeout(() => {
-                window.print();
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
                 
-                // Sembunyikan nota setelah mencetak
+                // Hapus iframe setelah mencetak
                 setTimeout(() => {
+                    document.body.removeChild(iframe);
                     notaElement.style.display = 'none';
-                }, 100);
-            }, 100);
+                }, 1000);
+            }, 500);
         }
         
         // Fungsi simpan transaksi
@@ -617,8 +1097,13 @@
             const price = parseFloat(priceInput.value);
             const weight = parseFloat(weightInput.value);
             
-            if (isNaN(weight) || weight <= 0) {
-                alert('Masukkan berat yang valid');
+            if (isNaN(weight)) {
+                showNotification('error', 'Kesalahan', 'Masukkan berat yang valid');
+                return;
+            }
+            
+            if (weight <= 0) {
+                showNotification('error', 'Kesalahan', 'Berat harus lebih dari 0');
                 return;
             }
             
@@ -647,78 +1132,93 @@
             // Reset input berat
             weightInput.value = '';
             weightInput.focus();
+            
+            // Tampilkan notifikasi sukses
+            showNotification('success', 'Sukses', 'Transaksi berhasil disimpan');
         }
         
         // Fungsi hapus transaksi
         function deleteTransaction(id) {
-            const index = transactions.findIndex(t => t.id === id);
-            if (index !== -1) {
-                dailyTotal -= transactions[index].total;
-                transactions.splice(index, 1);
-                
-                // Update localStorage
-                localStorage.setItem('transactions', JSON.stringify(transactions));
-                localStorage.setItem('dailyTotal', dailyTotal.toString());
-                
-                // Update tampilan
-                updateDailyTotal();
-                renderTransactions();
-            }
+            showDangerConfirm('Apakah Anda yakin ingin menghapus transaksi ini?', (confirmed) => {
+                if (confirmed) {
+                    const index = transactions.findIndex(t => t.id === id);
+                    if (index !== -1) {
+                        dailyTotal -= transactions[index].total;
+                        transactions.splice(index, 1);
+                        
+                        // Update localStorage
+                        localStorage.setItem('transactions', JSON.stringify(transactions));
+                        localStorage.setItem('dailyTotal', dailyTotal.toString());
+                        
+                        // Update tampilan
+                        updateDailyTotal();
+                        renderTransactions();
+                        
+                        showNotification('success', 'Sukses', 'Transaksi berhasil dihapus');
+                    }
+                }
+            });
         }
         
         // Fungsi reset hari
         function resetDay() {
             if (transactions.length === 0) {
-                alert('Tidak ada transaksi untuk direset');
+                showNotification('warning', 'Peringatan', 'Tidak ada transaksi untuk direset');
                 return;
             }
 
-            if (confirm('Apakah Anda yakin ingin mereset transaksi hari ini? Data akan disimpan di riwayat.')) {
-                // Simpan ke riwayat sebelum direset
-                const today = new Date().toISOString().split('T')[0];
-                const totalWeight = transactions.reduce((sum, t) => sum + t.weight, 0);
-                const totalValue = transactions.reduce((sum, t) => sum + t.total, 0);
-                
-                const dailyRecord = {
-                    date: today,
-                    transactionCount: transactions.length,
-                    totalWeight: parseFloat(totalWeight.toFixed(2)),
-                    totalValue: totalValue
-                };
-                
-                history.push(dailyRecord);
-                localStorage.setItem('history', JSON.stringify(history));
-                
-                // Reset transaksi hari ini
-                transactions = [];
-                dailyTotal = 0;
-                
-                // Update localStorage
-                localStorage.setItem('transactions', JSON.stringify(transactions));
-                localStorage.setItem('dailyTotal', dailyTotal.toString());
-                
-                // Update tampilan
-                updateDailyTotal();
-                renderTransactions();
-                renderHistory();
-                
-                alert('Transaksi hari ini telah disimpan di riwayat dan direset');
-            }
+            showDangerConfirm('Apakah Anda yakin ingin mereset transaksi hari ini? Data akan disimpan di riwayat.', (confirmed) => {
+                if (confirmed) {
+                    // Simpan ke riwayat sebelum direset
+                    const today = new Date().toISOString().split('T')[0];
+                    const totalWeight = transactions.reduce((sum, t) => sum + t.weight, 0);
+                    const totalValue = transactions.reduce((sum, t) => sum + t.total, 0);
+                    
+                    const dailyRecord = {
+                        date: today,
+                        transactionCount: transactions.length,
+                        totalWeight: parseFloat(totalWeight.toFixed(2)),
+                        totalValue: totalValue
+                    };
+                    
+                    history.push(dailyRecord);
+                    localStorage.setItem('history', JSON.stringify(history));
+                    
+                    // Reset transaksi hari ini
+                    transactions = [];
+                    dailyTotal = 0;
+                    
+                    // Update localStorage
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    localStorage.setItem('dailyTotal', dailyTotal.toString());
+                    
+                    // Update tampilan
+                    updateDailyTotal();
+                    renderTransactions();
+                    renderHistory();
+                    
+                    showNotification('success', 'Sukses', 'Transaksi hari ini telah disimpan di riwayat dan direset');
+                }
+            });
         }
         
         // Fungsi hapus riwayat
         function deleteHistory(date) {
-            if (confirm('Apakah Anda yakin ingin menghapus riwayat transaksi untuk tanggal ' + date + '?')) {
-                // Cari index data yang akan dihapus
-                const index = history.findIndex(record => record.date === date);
-                
-                if (index !== -1) {
-                    // Hapus hanya 1 data pada index yang ditemukan
-                    history.splice(index, 1);
-                    localStorage.setItem('history', JSON.stringify(history));
-                    renderHistory();
+            showDangerConfirm(`Apakah Anda yakin ingin menghapus riwayat transaksi untuk tanggal ${date}?`, (confirmed) => {
+                if (confirmed) {
+                    // Cari index data yang akan dihapus
+                    const index = history.findIndex(record => record.date === date);
+                    
+                    if (index !== -1) {
+                        // Hapus hanya 1 data pada index yang ditemukan
+                        history.splice(index, 1);
+                        localStorage.setItem('history', JSON.stringify(history));
+                        renderHistory();
+                        
+                        showNotification('success', 'Sukses', 'Riwayat transaksi berhasil dihapus');
+                    }
                 }
-            }
+            });
         }
 
         // Tampilkan riwayat transaksi
@@ -810,7 +1310,7 @@
         // Fungsi export ke Excel
         function exportToExcel() {
             if (transactions.length === 0) {
-                alert('Tidak ada data untuk diexport');
+                showNotification('warning', 'Peringatan', 'Tidak ada data untuk diexport');
                 return;
             }
             
@@ -842,12 +1342,14 @@
             // Export ke file
             const date = new Date().toISOString().slice(0, 10);
             XLSX.writeFile(wb, `Transaksi_Timbangan_${date}.xlsx`);
+            
+            showNotification('success', 'Sukses', 'Data berhasil diexport ke Excel');
         }
         
         // Fungsi export ke PDF
         function exportToPdf() {
             if (transactions.length === 0) {
-                alert('Tidak ada data untuk diexport');
+                showNotification('warning', 'Peringatan', 'Tidak ada data untuk diexport');
                 return;
             }
             
@@ -911,103 +1413,8 @@
             
             // Simpan PDF
             doc.save(`Transaksi_Timbangan_${new Date().toISOString().slice(0, 10)}.pdf`);
-        }
-
-        // Fungsi untuk mencetak nota (dimodifikasi untuk printer bluetooth)
-        function printNota() {
-            const notaElement = document.getElementById('print-nota');
             
-            // Tampilkan nota sebelum mencetak
-            notaElement.style.display = 'block';
-            
-            // Buat iframe untuk mencetak
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'absolute';
-            iframe.style.width = '80mm';
-            iframe.style.height = '100%';
-            iframe.style.left = '-1000px';
-            iframe.style.top = '0';
-            iframe.style.border = 'none';
-            
-            document.body.appendChild(iframe);
-            
-            // Salin konten nota ke iframe
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Nota Timbangan</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            width: 80mm;
-                            margin: 0;
-                            padding: 5px;
-                            font-size: 12px;
-                        }
-                        .nota-header {
-                            text-align: center;
-                            margin-bottom: 5px;
-                            border-bottom: 1px dashed #000;
-                            padding-bottom: 5px;
-                        }
-                        .nota-title {
-                            font-size: 16px;
-                            font-weight: bold;
-                            margin-bottom: 3px;
-                        }
-                        .nota-detail {
-                            margin: 3px 0;
-                            display: flex;
-                            justify-content: space-between;
-                        }
-                        .nota-label {
-                            font-weight: bold;
-                        }
-                        .nota-divider {
-                            border-top: 1px dashed #000;
-                            margin: 5px 0;
-                        }
-                        .nota-total {
-                            font-weight: bold;
-                            text-align: right;
-                            font-size: 14px;
-                            margin-top: 5px;
-                        }
-                        .nota-footer {
-                            text-align: center;
-                            margin-top: 10px;
-                            font-style: italic;
-                            font-size: 10px;
-                        }
-                        @page {
-                            size: 80mm auto;
-                            margin: 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${notaElement.innerHTML}
-                </body>
-                </html>
-            `);
-            iframeDoc.close();
-            
-            // Fokus ke iframe dan cetak
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-                
-                // Hapus iframe setelah mencetak
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    notaElement.style.display = 'none';
-                }, 1000);
-            }, 500);
+            showNotification('success', 'Sukses', 'Data berhasil diexport ke PDF');
         }
     </script>
 </body>
