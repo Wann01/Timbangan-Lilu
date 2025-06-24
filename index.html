@@ -610,6 +610,99 @@
         .modal-btn-danger:hover {
             background-color: var(--danger-hover);
         }
+        /* Tambahan untuk printer bluetooth dan USB */
+        @media print {
+            body {
+                width: 58mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 10px !important;
+            }
+            #print-nota {
+                width: 100% !important;
+                padding: 2px !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                font-size: 10px !important;
+            }
+            .nota-title {
+                font-size: 14px !important;
+                margin-bottom: 2px !important;
+            }
+            .nota-detail {
+                margin: 1px 0 !important;
+                font-size: 10px !important;
+            }
+            .nota-divider {
+                margin: 3px 0 !important;
+            }
+            .nota-total {
+                font-size: 12px !important;
+                margin-top: 3px !important;
+            }
+            .nota-footer {
+                font-size: 8px !important;
+                margin-top: 5px !important;
+            }
+        }
+
+        /* Style khusus untuk nota kecil (44mm) */
+        .nota-small {
+            width: 44mm !important;
+            font-size: 9px !important;
+        }
+        .nota-small .nota-title {
+            font-size: 12px !important;
+        }
+        .nota-small .nota-detail {
+            font-size: 9px !important;
+        }
+        .nota-small .nota-total {
+            font-size: 10px !important;
+        }
+        .nota-small .nota-footer {
+            font-size: 7px !important;
+        }
+
+        /* Style untuk modal pilihan printer */
+        .printer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .printer-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .printer-option:hover {
+            background-color: var(--light-gray);
+        }
+        .printer-option.active {
+            border-color: var(--primary-color);
+            background-color: #e8f4fc;
+        }
+        .printer-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .printer-details {
+            flex-grow: 1;
+        }
+        .printer-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .printer-desc {
+            font-size: 12px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -651,12 +744,13 @@
     </div>
 
     <div class="container">
-        <h1>Kalkulator Timbangan dengan Nota</h1>
+        <h1>Kalkulator Timbangan</h1>
 
         <!-- Tab Navigation -->
         <div class="tabs">
             <div class="tab active" onclick="switchTab('current')">Transaksi Hari Ini</div>
             <div class="tab" onclick="switchTab('history')">Riwayat Transaksi</div>
+            <div class="tab" onclick="switchTab('printer')">Pengaturan Printer</div>
         </div>
 
         <!-- Current Transactions Tab -->
@@ -732,6 +826,49 @@
                         <!-- Riwayat transaksi akan ditampilkan di sini -->
                     </tbody>
                 </table>
+            </div>
+        </div>
+        <!-- Printer Settings Tab -->
+        <div id="printer-tab" class="tab-content">
+            <h2>Pengaturan Printer</h2>
+            
+            <div class="form-group">
+                <label for="paper-size">Ukuran Kertas Nota:</label>
+                <select id="paper-size" class="form-control">
+                    <option value="58mm">58mm (Standar)</option>
+                    <option value="44mm">44mm (Kecil)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Pilih Metode Cetak:</label>
+                <div class="printer-options">
+                    <div class="printer-option active" onclick="selectPrinter('browser')">
+                        <div class="printer-icon">🖨️</div>
+                        <div class="printer-details">
+                            <div class="printer-title">Browser Print</div>
+                            <div class="printer-desc">Cetak menggunakan dialog print browser (USB/Bluetooth)</div>
+                        </div>
+                    </div>
+                    <div class="printer-option" onclick="selectPrinter('bluetooth')">
+                        <div class="printer-icon">📱</div>
+                        <div class="printer-details">
+                            <div class="printer-title">Bluetooth Printer</div>
+                            <div class="printer-desc">Axelpos X583 (Koneksi langsung dari HP)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" id="bluetooth-settings" style="display: none;">
+                <label for="printer-name">Nama Printer Bluetooth:</label>
+                <input type="text" id="printer-name" placeholder="Axelpos X583" value="Axelpos X583">
+                
+                <button id="connect-bluetooth" class="export-btn" style="margin-top: 10px;">Sambungkan Printer Bluetooth</button>
+            </div>
+            
+            <div class="form-group">
+                <button id="test-print" class="export-btn">Test Cetak Nota</button>
             </div>
         </div>
     </div>
@@ -1416,6 +1553,283 @@
             
             showNotification('success', 'Sukses', 'Data berhasil diexport ke PDF');
         }
+
+        // Tambahan variabel untuk pengaturan printer
+        let printerSettings = JSON.parse(localStorage.getItem('printerSettings')) || {
+            paperSize: '58mm',
+            printerType: 'browser',
+            bluetoothPrinterName: 'Axelpos X583'
+        };
+        
+        // Elemen DOM tambahan
+        const paperSizeSelect = document.getElementById('paper-size');
+        const testPrintBtn = document.getElementById('test-print');
+        const connectBluetoothBtn = document.getElementById('connect-bluetooth');
+        const printerNameInput = document.getElementById('printer-name');
+        
+        // Inisialisasi pengaturan printer
+        function initPrinterSettings() {
+            paperSizeSelect.value = printerSettings.paperSize;
+            printerNameInput.value = printerSettings.bluetoothPrinterName;
+            selectPrinter(printerSettings.printerType);
+            
+            // Update ukuran nota berdasarkan pengaturan
+            updateNotaSize();
+        }
+        
+        // Pilih jenis printer
+        function selectPrinter(type) {
+            printerSettings.printerType = type;
+            
+            // Update tampilan
+            document.querySelectorAll('.printer-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            document.querySelector(`.printer-option[onclick="selectPrinter('${type}')"]`).classList.add('active');
+            
+            // Tampilkan pengaturan bluetooth jika dipilih
+            document.getElementById('bluetooth-settings').style.display = 
+                type === 'bluetooth' ? 'block' : 'none';
+            
+            // Simpan pengaturan
+            savePrinterSettings();
+        }
+        
+        // Update ukuran nota
+        function updateNotaSize() {
+            const notaElement = document.getElementById('print-nota');
+            if (printerSettings.paperSize === '44mm') {
+                notaElement.classList.add('nota-small');
+            } else {
+                notaElement.classList.remove('nota-small');
+            }
+        }
+        
+        // Simpan pengaturan printer
+        function savePrinterSettings() {
+            printerSettings.paperSize = paperSizeSelect.value;
+            printerSettings.bluetoothPrinterName = printerNameInput.value;
+            localStorage.setItem('printerSettings', JSON.stringify(printerSettings));
+            updateNotaSize();
+        }
+        
+        // Fungsi untuk mencetak nota (dimodifikasi)
+        function printNota() {
+            const notaElement = document.getElementById('print-nota');
+            
+            // Tampilkan nota sebelum mencetak
+            notaElement.style.display = 'block';
+            
+            if (printerSettings.printerType === 'browser') {
+                // Cetak menggunakan dialog print browser
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Nota Timbangan</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                width: ${printerSettings.paperSize === '44mm' ? '44mm' : '58mm'};
+                                margin: 0;
+                                padding: 2px;
+                                font-size: ${printerSettings.paperSize === '44mm' ? '9px' : '10px'};
+                            }
+                            .nota-header {
+                                text-align: center;
+                                margin-bottom: 5px;
+                                border-bottom: 1px dashed #000;
+                                padding-bottom: 3px;
+                            }
+                            .nota-title {
+                                font-size: ${printerSettings.paperSize === '44mm' ? '12px' : '14px'};
+                                font-weight: bold;
+                                margin-bottom: 2px;
+                            }
+                            .nota-detail {
+                                margin: 1px 0;
+                                display: flex;
+                                justify-content: space-between;
+                                font-size: ${printerSettings.paperSize === '44mm' ? '9px' : '10px'};
+                            }
+                            .nota-label {
+                                font-weight: bold;
+                            }
+                            .nota-divider {
+                                border-top: 1px dashed #000;
+                                margin: 3px 0;
+                            }
+                            .nota-total {
+                                font-weight: bold;
+                                text-align: right;
+                                font-size: ${printerSettings.paperSize === '44mm' ? '10px' : '12px'};
+                                margin-top: 3px;
+                            }
+                            .nota-footer {
+                                text-align: center;
+                                margin-top: 5px;
+                                font-style: italic;
+                                font-size: ${printerSettings.paperSize === '44mm' ? '7px' : '8px'};
+                            }
+                            @page {
+                                size: ${printerSettings.paperSize === '44mm' ? '44mm' : '58mm'} auto;
+                                margin: 0;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${notaElement.innerHTML}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                
+                setTimeout(() => {
+                    printWindow.focus();
+                    printWindow.print();
+                    printWindow.close();
+                    notaElement.style.display = 'none';
+                }, 500);
+            } else {
+                // Cetak menggunakan Bluetooth (untuk mobile)
+                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    printViaBluetooth();
+                } else {
+                    showNotification('warning', 'Peringatan', 'Cetak Bluetooth hanya tersedia di perangkat mobile');
+                }
+                notaElement.style.display = 'none';
+            }
+        }
+        
+        // Fungsi untuk mencetak via Bluetooth (untuk mobile)
+        function printViaBluetooth() {
+            showNotification('info', 'Info', 'Menyiapkan koneksi ke printer Bluetooth...');
+            
+            // Ini adalah contoh implementasi, mungkin perlu disesuaikan dengan API printer tertentu
+            if (typeof navigator.bluetooth === 'undefined') {
+                showNotification('error', 'Error', 'Browser tidak mendukung Bluetooth');
+                return;
+            }
+            
+            navigator.bluetooth.requestDevice({
+                filters: [{ name: printerSettings.bluetoothPrinterName }],
+                optionalServices: ['generic_access']
+            })
+            .then(device => {
+                showNotification('info', 'Info', 'Menghubungkan ke ' + device.name);
+                return device.gatt.connect();
+            })
+            .then(server => {
+                showNotification('success', 'Sukses', 'Terhubung ke printer');
+                // Di sini Anda perlu menambahkan kode untuk mengirim data ke printer
+                // Format data ESC/POS untuk printer thermal
+                const encoder = new TextEncoder();
+                const printData = generateEscPosPrintData();
+                
+                // Contoh mengirim data (implementasi aktual tergantung pada printer)
+                return server.getPrimaryService('generic_access')
+                    .then(service => service.getCharacteristic('device_name'))
+                    .then(characteristic => characteristic.writeValue(encoder.encode(printData)));
+            })
+            .then(() => {
+                showNotification('success', 'Sukses', 'Nota berhasil dikirim ke printer');
+            })
+            .catch(error => {
+                showNotification('error', 'Error', 'Gagal mencetak: ' + error.message);
+            });
+        }
+        
+        // Fungsi untuk menghasilkan data ESC/POS untuk printer thermal
+        function generateEscPosPrintData() {
+            const nota = document.getElementById('print-nota');
+            const title = nota.querySelector('.nota-title').textContent;
+            const date = nota.querySelector('#nota-date').textContent;
+            const notaNumber = nota.querySelector('#nota-number').textContent;
+            const weight = nota.querySelector('#nota-weight').textContent;
+            const price = nota.querySelector('#nota-price').textContent;
+            const total = nota.querySelector('#nota-total').textContent;
+            const footer = nota.querySelector('.nota-footer').textContent;
+            
+            // Format ESC/POS
+            let escPosData = '';
+            
+            // Initialize printer
+            escPosData += '\x1B\x40'; // Initialize command
+            
+            // Set text alignment center
+            escPosData += '\x1B\x61\x01'; // Center alignment
+            
+            // Title (bold, double height)
+            escPosData += '\x1B\x21\x30'; // Select double height
+            escPosData += '\x1B\x45\x01'; // Set emphasized (bold) on
+            escPosData += title + '\n';
+            escPosData += '\x1B\x45\x00'; // Set emphasized off
+            escPosData += '\x1B\x21\x00'; // Cancel double height
+            
+            // Divider
+            escPosData += '------------------------\n';
+            
+            // Details (left alignment)
+            escPosData += '\x1B\x61\x00'; // Left alignment
+            
+            // Date and nota number
+            escPosData += 'Tanggal: ' + date + '\n';
+            escPosData += 'No. Nota: ' + notaNumber + '\n';
+            
+            // Divider
+            escPosData += '------------------------\n';
+            
+            // Transaction details
+            escPosData += 'Berat: ' + weight + ' Kg\n';
+            escPosData += 'Harga/Kg: Rp ' + price + '\n';
+            
+            // Divider
+            escPosData += '------------------------\n';
+            
+            // Total (center alignment, bold)
+            escPosData += '\x1B\x61\x01'; // Center alignment
+            escPosData += '\x1B\x45\x01'; // Set emphasized (bold) on
+            escPosData += 'TOTAL: Rp ' + total + '\n';
+            escPosData += '\x1B\x45\x00'; // Set emphasized off
+            
+            // Footer
+            escPosData += '\n' + footer + '\n';
+            
+            // Feed and cut paper
+            escPosData += '\n\n\n\x1D\x56\x41\x10'; // Cut paper
+            
+            return escPosData;
+        }
+        
+        // Fungsi test cetak
+        function testPrint() {
+            // Set data dummy untuk test
+            const now = new Date();
+            document.getElementById('nota-date').textContent = now.toLocaleDateString('id-ID');
+            document.getElementById('nota-number').textContent = 'TEST-1234';
+            document.getElementById('nota-weight').textContent = '1.50';
+            document.getElementById('nota-price').textContent = '10,000';
+            document.getElementById('nota-total').textContent = '15,000';
+            
+            // Cetak
+            printNota();
+            
+            showNotification('info', 'Info', 'Mengirim test print ke printer...');
+        }
+        
+        // Event listeners tambahan
+        paperSizeSelect.addEventListener('change', savePrinterSettings);
+        printerNameInput.addEventListener('change', savePrinterSettings);
+        testPrintBtn.addEventListener('click', testPrint);
+        connectBluetoothBtn.addEventListener('click', printViaBluetooth);
+        
+        // Inisialisasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            initPrinterSettings();
+        });
     </script>
 </body>
 </html>
