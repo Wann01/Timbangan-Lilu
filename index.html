@@ -7,48 +7,59 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 300px;
+            width: 80mm; /* Lebar kertas struk */
             margin: 0 auto;
-            padding: 20px;
+            padding: 5mm;
         }
         .receipt {
-            border: 1px dashed #000;
-            padding: 15px;
             text-align: center;
+            font-size: 14px;
+            line-height: 1.4;
         }
         .header {
             font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 16px;
+            margin-bottom: 5px;
         }
-        .info {
-            margin: 10px 0;
-            font-size: 14px;
+        .address {
+            margin: 5px 0;
+            font-size: 12px;
         }
         .detail {
-            margin: 15px 0;
+            margin: 10px 0;
             text-align: left;
-            padding-left: 20px;
+            padding-left: 10px;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 15px;
+            margin: 10px 0;
         }
         .footer {
-            margin-top: 15px;
+            margin-top: 10px;
             font-style: italic;
+            font-size: 12px;
         }
         input {
             width: 100%;
             padding: 5px;
             margin: 5px 0;
+            font-size: 14px;
         }
         button {
             padding: 8px 15px;
-            margin: 10px 5px;
+            margin: 5px;
             cursor: pointer;
+            font-size: 14px;
         }
         @media print {
             button, .no-print {
                 display: none;
             }
-            .receipt {
-                border: none;
+            body {
+                width: 80mm;
+                margin: 0;
+                padding: 5mm;
             }
         }
     </style>
@@ -57,10 +68,10 @@
     <div class="no-print">
         <h2>Kalkulator Timbangan</h2>
         <label for="weight">Berat (Kg):</label>
-        <input type="number" id="weight" step="0.01" min="0" value="5.00">
+        <input type="number" id="weight" step="0.01" min="0" value="6.00">
         
         <label for="price">Harga per Kg (Rp):</label>
-        <input type="number" id="price" min="0" value="10000">
+        <input type="number" id="price" min="0" value="36000">
         
         <button onclick="calculate()">Hitung</button>
         <button onclick="window.print()">Cetak Nota</button>
@@ -68,15 +79,15 @@
 
     <div class="receipt" id="receipt">
         <div class="header">TOKO TIMBANGAN</div>
-        <div class="info">Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</div>
-        <div class="info">Telp: 0812-3456-7890</div>
+        <div class="address">Desa Kampala, Kec. Eremersa, Kab.<br>Bantaeng</div>
+        <div class="address">Telp: 0812-3456-7890</div>
         
         <div class="detail">
-            <div id="date">Tanggal: 25/06/2025, 18.31</div>
-            <div id="invoice">No. Nota: NOTA-20250625-0010</div>
-            <div id="weightDisplay">Berat: 5.00 Kg</div>
-            <div id="priceDisplay">Harga/Kg: Rp 10.000</div>
-            <div id="totalDisplay" style="font-weight: bold;">TOTAL: Rp 50.000</div>
+            <div id="date">Tanggal: 25/6/2025, 18:35</div>
+            <div id="invoice">No. Nota: NOTA-20250625-183531</div>
+            <div id="weightDisplay">Berat: 6.00 Kg</div>
+            <div id="priceDisplay">Harga/Kg: Rp 36.000</div>
+            <div id="totalDisplay" class="total">TOTAL: Rp 216.000</div>
         </div>
         
         <div class="footer">Terima kasih atas kunjungan Anda</div>
@@ -93,8 +104,8 @@
             
             // Dapatkan tanggal dan waktu sekarang
             const now = new Date();
-            const dateStr = now.toLocaleDateString('id-ID');
-            const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
             
             // Format nomor nota
             const invoiceNumber = 'NOTA-' + now.getFullYear() + 
