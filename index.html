@@ -244,131 +244,69 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 10px;
-                font-family: Arial, sans-serif;
+                padding: 30px;
+                font-size: 14px;
             }
-            .no-print {
-                display: none !important;
+            @page {
+                size: A4 portrait;
+                margin: 1cm;
             }
         }
 
+
         #print-nota {
             display: none;
-            border: none;
-            padding: 0;
-            width: 80mm;
+            width: 100%;
+            max-width: 100%;
+            padding: 20px;
+            margin: 0 auto;
             background: white;
             font-family: Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.2;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            font-size: 14px;
+            box-sizing: border-box;
         }
-    
-        .nota-content {
-            width: 100%;
-            text-align: center;
-        }
-    
+
+
         .nota-header {
             text-align: center;
-            margin-bottom: 5px;
-            padding-bottom: 5px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
         }
-    
+
         .nota-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
-    
+
         .nota-detail {
-            margin: 2px 0;
+            margin: 5px 0;
             display: flex;
             justify-content: space-between;
-            width: 100%;
         }
-    
+
         .nota-label {
             font-weight: bold;
-            text-align: left;
-            width: 50%;
         }
-    
-        .nota-value {
-            text-align: right;
-            width: 50%;
-        }
-    
+
         .nota-divider {
             border-top: 1px dashed #000;
-            margin: 5px 0;
-            width: 100%;
+            margin: 10px 0;
         }
-    
+
         .nota-total {
             font-weight: bold;
             text-align: right;
-            font-size: 14px;
-            margin-top: 5px;
-            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
         }
-    
+
         .nota-footer {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 15px;
             font-style: italic;
-            font-size: 10px;
-            width: 100%;
-        }
-    
-        @media print {
-            body, html {
-                width: 80mm !important;
-                height: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-            }
-            
-            #print-nota {
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
-                transform: none !important;
-            }
-        }
-    
-        @media print {
-            body {
-                width: 80mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                font-size: 12px !important;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-            }
-            #print-nota {
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                position: relative;
-                left: auto;
-                transform: none;
-            }
+            font-size: 12px;
         }
         
         @media (min-width: 768px) {
@@ -418,6 +356,32 @@
                 padding: 10px;
             }
         }
+        /* Tambahan untuk printer bluetooth */
+        @media print {
+            body {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 12px !important;
+            }
+            #print-nota {
+                width: 100% !important;
+                padding: 5px !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .nota-title {
+                font-size: 16px !important;
+            }
+            .nota-detail {
+                margin: 3px 0 !important;
+            }
+            .nota-footer {
+                font-size: 10px !important;
+            }
+        }
+
         /* Tambahan CSS untuk notifikasi */
         .notification-container {
             position: fixed;
@@ -778,42 +742,34 @@
 
     <!-- Elemen untuk nota cetak -->
     <div id="print-nota">
-        <div class="nota-content">
-            <div class="nota-header">
-                <div class="nota-title">TOKO TIMBANGAN</div>
-                <div>Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</div>
-                <div>Telp: 0812-3456-7890</div>
-            </div>
-            
-            <div class="nota-detail">
-                <span class="nota-label">Tanggal:</span>
-                <span class="nota-value" id="nota-date"></span>
-            </div>
-            <div class="nota-detail">
-                <span class="nota-label">No. Nota:</span>
-                <span class="nota-value" id="nota-number"></span>
-            </div>
-            
-            <div class="nota-divider"></div>
-            
-            <div class="nota-detail">
-                <span class="nota-label">Berat:</span>
-                <span class="nota-value" id="nota-weight"></span> Kg
-            </div>
-            <div class="nota-detail">
-                <span class="nota-label">Harga/Kg:</span>
-                <span class="nota-value">Rp <span id="nota-price"></span></span>
-            </div>
-            
-            <div class="nota-divider"></div>
-            
-            <div class="nota-total">
-                TOTAL: Rp <span id="nota-total"></span>
-            </div>
-            
-            <div class="nota-footer">
-                Terima kasih atas kunjungan Anda
-            </div>
+        <div class="nota-header">
+            <div class="nota-title">TOKO TIMBANGAN</div>
+            <p>Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</p>
+            <p>Telp: 0812-3456-7890</p>
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">Tanggal:</span>
+            <span id="nota-date"></span>
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">No. Nota:</span>
+            <span id="nota-number"></span>
+        </div>
+        <div class="nota-divider"></div>
+        <div class="nota-detail">
+            <span class="nota-label">Berat:</span>
+            <span id="nota-weight"></span> Kg
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">Harga/Kg:</span>
+            Rp <span id="nota-price"></span>
+        </div>
+        <div class="nota-divider"></div>
+        <div class="nota-total">
+            TOTAL: Rp <span id="nota-total"></span>
+        </div>
+        <div class="nota-footer">
+            Terima kasih atas kunjungan Anda
         </div>
     </div>
 
@@ -1053,7 +1009,7 @@
             // Buat iframe untuk mencetak
             const iframe = document.createElement('iframe');
             iframe.style.position = 'absolute';
-            iframe.style.width = '80mm';
+            iframe.style.width = '58mm';
             iframe.style.height = '100%';
             iframe.style.left = '-1000px';
             iframe.style.top = '0';
@@ -1072,76 +1028,48 @@
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>Nota Timbangan</title>
                     <style>
-                        body, html {
-                            width: 80mm !important;
-                            height: 100% !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            display: flex !important;
-                            justify-content: center !important;
-                            align-items: center !important;
+                        body {
                             font-family: Arial, sans-serif;
+                            width: 80mm;
+                            margin: 0;
+                            padding: 5px;
                             font-size: 12px;
-                            line-height: 1.2;
                         }
-                        
-                        .nota-content {
-                            width: 100%;
-                            text-align: center;
-                        }
-                        
                         .nota-header {
                             text-align: center;
                             margin-bottom: 5px;
+                            border-bottom: 1px dashed #000;
                             padding-bottom: 5px;
                         }
-                        
                         .nota-title {
                             font-size: 16px;
                             font-weight: bold;
                             margin-bottom: 3px;
                         }
-                        
                         .nota-detail {
-                            margin: 2px 0;
+                            margin: 3px 0;
                             display: flex;
                             justify-content: space-between;
-                            width: 100%;
                         }
-                        
                         .nota-label {
                             font-weight: bold;
-                            text-align: left;
-                            width: 50%;
                         }
-                        
-                        .nota-value {
-                            text-align: right;
-                            width: 50%;
-                        }
-                        
                         .nota-divider {
                             border-top: 1px dashed #000;
                             margin: 5px 0;
-                            width: 100%;
                         }
-                        
                         .nota-total {
                             font-weight: bold;
                             text-align: right;
                             font-size: 14px;
                             margin-top: 5px;
-                            width: 100%;
                         }
-                        
                         .nota-footer {
                             text-align: center;
                             margin-top: 10px;
                             font-style: italic;
                             font-size: 10px;
-                            width: 100%;
                         }
-                        
                         @page {
                             size: 80mm auto;
                             margin: 0;
