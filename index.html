@@ -1,72 +1,60 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Timbangan - A4</title>
+    <title>Tender Management Receipt</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            width: 210mm; /* Lebar A4 */
-            height: 297mm; /* Tinggi A4 */
+            width: 80mm;
             margin: 0 auto;
-            padding: 15mm;
-            box-sizing: border-box;
+            padding: 5mm;
+            font-size: 14px;
         }
         .receipt {
             text-align: center;
-            font-size: 18px;
-            line-height: 1.6;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            line-height: 1.4;
         }
         .header {
             font-weight: bold;
-            font-size: 24px;
-            margin-bottom: 15px;
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
         }
-        .address {
-            margin: 10px 0;
+        .subheader {
             font-size: 16px;
-            line-height: 1.4;
+            margin: 8px 0;
+            text-transform: uppercase;
         }
         .detail {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .detail div {
             margin: 12px 0;
+            text-align: left;
+            padding-left: 10px;
+        }
+        .detail-item {
+            margin: 8px 0;
         }
         .total {
             font-weight: bold;
-            font-size: 22px;
-            margin: 25px 0;
-        }
-        .footer {
-            margin-top: 20px;
-            font-style: italic;
-            font-size: 16px;
+            margin: 15px 0;
+            text-transform: uppercase;
         }
         .input-section {
-            margin-bottom: 30px;
-            padding: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
         }
-        input {
+        input, select {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            font-size: 16px;
+            padding: 8px;
+            margin: 5px 0;
             box-sizing: border-box;
         }
         button {
-            padding: 12px 25px;
-            margin: 10px;
+            padding: 10px 15px;
+            margin: 10px 5px;
             cursor: pointer;
-            font-size: 16px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -77,84 +65,65 @@
                 display: none;
             }
             body {
-                width: 210mm;
-                height: 297mm;
+                width: 80mm;
                 margin: 0;
-                padding: 15mm;
+                padding: 5mm;
             }
-            .receipt {
-                justify-content: flex-start;
-            }
-        }
-        @page {
-            size: A4 portrait;
-            margin: 15mm;
         }
     </style>
 </head>
 <body>
     <div class="input-section no-print">
-        <h2>Kalkulator Timbangan - Format A4</h2>
-        <label for="weight">Berat (Kg):</label>
-        <input type="number" id="weight" step="0.01" min="0" value="6.00">
+        <h2>Tender Management</h2>
+        <label for="volume">Volume:</label>
+        <input type="text" id="volume" value="1: 2024-07-08">
         
-        <label for="price">Harga per Kg (Rp):</label>
-        <input type="number" id="price" min="0" value="36000">
+        <label for="department">Department:</label>
+        <input type="text" id="department" value="RESTAURANTES">
         
-        <div>
-            <button onclick="calculate()">Hitung</button>
-            <button onclick="window.print()" style="background-color: #2196F3;">Cetak Nota</button>
-        </div>
+        <label for="tender">Tender abscrits:</label>
+        <input type="text" id="tender" value="<18">
+        
+        <label for="volNumber">No. vol:</label>
+        <input type="text" id="volNumber" value="80/2016/06/01/2024">
+        
+        <label for="item">Item:</label>
+        <input type="text" id="item" value="16.5.9">
+        
+        <label for="format">Format:</label>
+        <input type="text" id="format" value="0,233,000">
+        
+        <button onclick="updateReceipt()">Generate</button>
+        <button onclick="window.print()">Print Receipt</button>
     </div>
 
     <div class="receipt" id="receipt">
-        <div class="header">TOKO TIMBANGAN</div>
-        <div class="address">Desa Kampala, Kec. Eremersa, Kab.<br>Bantaeng</div>
-        <div class="address">Telp: 0812-3456-7890</div>
+        <div class="header">TUSD THMAHASH</div>
+        <div class="subheader" id="volumeDisplay">VOLUME 1: 2024-07-08</div>
+        <div class="subheader" id="departmentDisplay">RESTAURANTES</div>
         
         <div class="detail">
-            <div id="date">Tanggal: 25/6/2025, 18:35</div>
-            <div id="invoice">No. Nota: NOTA-20250625-183531</div>
-            <div id="weightDisplay">Berat: 6.00 Kg</div>
-            <div id="priceDisplay">Harga/Kg: Rp 36.000</div>
-            <div id="totalDisplay" class="total">TOTAL: Rp 216.000</div>
+            <div class="detail-item" id="tenderDisplay">Tender abscrits: <18</div>
+            <div class="detail-item" id="volNumberDisplay">No. vol. 80/2016/06/01/2024</div>
+            <div class="detail-item" id="itemDisplay">Item 16.5.9</div>
+            <div class="detail-item" id="formatDisplay">Format: 0,233,000</div>
         </div>
         
-        <div class="footer">Terima kasih atas kunjungan Anda</div>
+        <div class="total" id="totalDisplay">TOTAL BY STEAM</div>
     </div>
 
     <script>
-        function calculate() {
-            // Ambil nilai input
-            const weight = parseFloat(document.getElementById('weight').value);
-            const price = parseInt(document.getElementById('price').value);
-            
-            // Hitung total
-            const total = weight * price;
-            
-            // Dapatkan tanggal dan waktu sekarang
-            const now = new Date();
-            const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
-            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            // Format nomor nota
-            const invoiceNumber = 'NOTA-' + now.getFullYear() + 
-                                String(now.getMonth()+1).padStart(2, '0') + 
-                                String(now.getDate()).padStart(2, '0') + '-' + 
-                                String(now.getHours()).padStart(2, '0') + 
-                                String(now.getMinutes()).padStart(2, '0') + 
-                                String(now.getSeconds()).padStart(2, '0');
-            
-            // Update tampilan nota
-            document.getElementById('date').textContent = `Tanggal: ${dateStr}, ${timeStr}`;
-            document.getElementById('invoice').textContent = `No. Nota: ${invoiceNumber}`;
-            document.getElementById('weightDisplay').textContent = `Berat: ${weight.toFixed(2)} Kg`;
-            document.getElementById('priceDisplay').textContent = `Harga/Kg: Rp ${price.toLocaleString('id-ID')}`;
-            document.getElementById('totalDisplay').textContent = `TOTAL: Rp ${total.toLocaleString('id-ID')}`;
+        function updateReceipt() {
+            document.getElementById('volumeDisplay').textContent = 'VOLUME ' + document.getElementById('volume').value;
+            document.getElementById('departmentDisplay').textContent = document.getElementById('department').value;
+            document.getElementById('tenderDisplay').textContent = 'Tender abscrits: ' + document.getElementById('tender').value;
+            document.getElementById('volNumberDisplay').textContent = 'No. vol. ' + document.getElementById('volNumber').value;
+            document.getElementById('itemDisplay').textContent = 'Item ' + document.getElementById('item').value;
+            document.getElementById('formatDisplay').textContent = 'Format: ' + document.getElementById('format').value;
         }
         
-        // Inisialisasi dengan tanggal sekarang saat pertama kali load
-        window.onload = calculate;
+        // Initialize with default values
+        window.onload = updateReceipt;
     </script>
 </body>
 </html>
