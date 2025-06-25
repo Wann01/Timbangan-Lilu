@@ -1,129 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tender Management Receipt</title>
+    <title>TUSD THMAHASH - VOLUME 1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            width: 80mm;
-            margin: 0 auto;
-            padding: 5mm;
-            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
         }
-        .receipt {
+        .document {
+            width: 80%;
+            max-width: 800px;
+            padding: 40px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             text-align: center;
-            line-height: 1.4;
         }
         .header {
+            font-size: 48px;
             font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+            margin-bottom: 30px;
+            line-height: 1.2;
         }
         .subheader {
-            font-size: 16px;
-            margin: 8px 0;
-            text-transform: uppercase;
-        }
-        .detail {
-            margin: 12px 0;
-            text-align: left;
-            padding-left: 10px;
-        }
-        .detail-item {
-            margin: 8px 0;
-        }
-        .total {
+            font-size: 36px;
+            margin-bottom: 40px;
             font-weight: bold;
-            margin: 15px 0;
-            text-transform: uppercase;
         }
-        .input-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
+        .content {
+            font-size: 32px;
+            line-height: 1.8;
+            text-align: left;
+            margin-left: 20%;
         }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 10px 15px;
-            margin: 10px 5px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
+        .footer {
+            font-size: 28px;
+            margin-top: 50px;
+            font-style: italic;
         }
         @media print {
-            button, .input-section {
-                display: none;
-            }
             body {
-                width: 80mm;
+                background-color: white;
+            }
+            .document {
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                padding: 0;
                 margin: 0;
-                padding: 5mm;
             }
         }
     </style>
 </head>
 <body>
-    <div class="input-section no-print">
-        <h2>Tender Management</h2>
-        <label for="volume">Volume:</label>
-        <input type="text" id="volume" value="1: 2024-07-08">
-        
-        <label for="department">Department:</label>
-        <input type="text" id="department" value="RESTAURANTES">
-        
-        <label for="tender">Tender abscrits:</label>
-        <input type="text" id="tender" value="<18">
-        
-        <label for="volNumber">No. vol:</label>
-        <input type="text" id="volNumber" value="80/2016/06/01/2024">
-        
-        <label for="item">Item:</label>
-        <input type="text" id="item" value="16.5.9">
-        
-        <label for="format">Format:</label>
-        <input type="text" id="format" value="0,233,000">
-        
-        <button onclick="updateReceipt()">Generate</button>
-        <button onclick="window.print()">Print Receipt</button>
-    </div>
-
-    <div class="receipt" id="receipt">
+    <div class="document">
         <div class="header">TUSD THMAHASH</div>
-        <div class="subheader" id="volumeDisplay">VOLUME 1: 2024-07-08</div>
-        <div class="subheader" id="departmentDisplay">RESTAURANTES</div>
+        <div class="subheader">VOLUME 1: 2024-07-08</div>
+        <div class="subheader">RESTAURANTES</div>
         
-        <div class="detail">
-            <div class="detail-item" id="tenderDisplay">Tender abscrits: <18</div>
-            <div class="detail-item" id="volNumberDisplay">No. vol. 80/2016/06/01/2024</div>
-            <div class="detail-item" id="itemDisplay">Item 16.5.9</div>
-            <div class="detail-item" id="formatDisplay">Format: 0,233,000</div>
+        <div class="content">
+            <div>Tender abscrits: &lt;18</div>
+            <div>No. vol. 80/2016/06/01/2024</div>
+            <div>Item 16.5.9</div>
+            <div>Format: 0,233,000</div>
         </div>
         
-        <div class="total" id="totalDisplay">TOTAL BY STEAM</div>
-    </div>
-
-    <script>
-        function updateReceipt() {
-            document.getElementById('volumeDisplay').textContent = 'VOLUME ' + document.getElementById('volume').value;
-            document.getElementById('departmentDisplay').textContent = document.getElementById('department').value;
-            document.getElementById('tenderDisplay').textContent = 'Tender abscrits: ' + document.getElementById('tender').value;
-            document.getElementById('volNumberDisplay').textContent = 'No. vol. ' + document.getElementById('volNumber').value;
-            document.getElementById('itemDisplay').textContent = 'Item ' + document.getElementById('item').value;
-            document.getElementById('formatDisplay').textContent = 'Format: ' + document.getElementById('format').value;
-        }
+        <div class="footer">TOTAL BY STEAM</div>
         
-        // Initialize with default values
-        window.onload = updateReceipt;
-    </script>
+        <button onclick="window.print()" style="
+            padding: 15px 30px;
+            font-size: 20px;
+            margin-top: 40px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        ">
+            CETAK DOKUMEN
+        </button>
+    </div>
 </body>
 </html>
