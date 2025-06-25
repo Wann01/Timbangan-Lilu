@@ -252,8 +252,83 @@
             }
         }
 
+        #print-nota {
+            display: none;
+            border: none;
+            padding: 0;
+            width: 80mm;
+            margin: 0 auto;
+            background: white;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.2;
+        }
 
-        
+        .nota-header {
+            text-align: center;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+        }
+
+        .nota-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .nota-detail {
+            margin: 3px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nota-label {
+            font-weight: bold;
+        }
+
+        .nota-divider {
+            border-top: 1px dashed #000;
+            margin: 5px 0;
+            padding-top: 5px;
+        }
+
+        .nota-total {
+            font-weight: bold;
+            text-align: right;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .nota-footer {
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+            font-size: 12px;
+        }
+
+        .nota-copy {
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 14px !important;
+            }
+            #print-nota {
+                width: 80mm !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .nota-title {
+                font-size: 18px !important;
+            }
+        }        
         @media (min-width: 768px) {
             .container {
                 padding: 20px;
@@ -286,7 +361,7 @@
                 width: 100%;
             }
 
-            .tabs {
+            .tabs {a
                 flex-direction: column;
             }
 
@@ -299,6 +374,31 @@
             #print-nota {
                 width: 100%;
                 padding: 10px;
+            }
+        }
+        /* Tambahan untuk printer bluetooth */
+        @media print {
+            body {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-size: 12px !important;
+            }
+            #print-nota {
+                width: 100% !important;
+                padding: 5px !important;
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .nota-title {
+                font-size: 16px !important;
+            }
+            .nota-detail {
+                margin: 3px 0 !important;
+            }
+            .nota-footer {
+                font-size: 10px !important;
             }
         }
 
@@ -596,7 +696,7 @@
             </div>
             
             <div class="button-group">
-                <button id="calculate">Hitung</button>
+                <button id="calculate">Hitung & Cetak Nota</button>
                 <button id="save">Simpan Transaksi</button>
                 <button id="reset-day">Reset Hari Ini</button>
             </div>
@@ -662,11 +762,16 @@
 
     <!-- Elemen untuk nota cetak -->
     <div id="print-nota">
+        <div class="nota-copy">Salinan: 1</div>
+        <div class="nota-copy">Ukuran kertas: 80mm</div>
+        <div class="nota-divider"></div>
+        
         <div class="nota-header">
             <div class="nota-title">TOKO TIMBANGAN</div>
             <p>Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</p>
             <p>Telp: 0812-3456-7890</p>
         </div>
+        
         <div class="nota-detail">
             <span class="nota-label">Tanggal:</span>
             <span id="nota-date"></span>
@@ -920,123 +1025,102 @@
         }
         
         // Fungsi untuk mencetak nota
-        // Fungsi untuk mencetak ke printer Bluetooth
         function printNota() {
             const notaElement = document.getElementById('print-nota');
             notaElement.style.display = 'block';
             
-            // Format konten untuk printer thermal
-            let printContent = `
-                TOKO TIMBANGAN\n
-                Desa Kampala, Kec. Eremerasa, Kab. Bantaeng\n
-                Telp: 0812-3456-7890\n
-                --------------------------\n
-                Tanggal: ${document.getElementById('nota-date').textContent}\n
-                No. Nota: ${document.getElementById('nota-number').textContent}\n
-                --------------------------\n
-                Berat: ${document.getElementById('nota-weight').textContent} Kg\n
-                Harga/Kg: Rp ${document.getElementById('nota-price').textContent}\n
-                --------------------------\n
-                TOTAL: Rp ${document.getElementById('nota-total').textContent}\n
-                --------------------------\n
-                Terima kasih atas kunjungan Anda\n
-            `;
-
-            // Untuk Android: Hubungkan dengan Web Bluetooth API
-            if (navigator.bluetooth) {
-                printViaBluetooth(printContent);
-            } 
-            // Untuk iOS/Android dengan intent
-            else if (window.android || window.webkit) {
-                printViaIntent(printContent);
-            }
-            // Fallback ke print browser biasa
-            else {
-                printFallback(notaElement);
-            }
-
-            notaElement.style.display = 'none';
-        }
-
-        // Metode 1: Web Bluetooth API (untuk Android/Chrome)
-        async function printViaBluetooth(content) {
-            try {
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ namePrefix: 'Printer' }],
-                    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] // Service UUID umum untuk printer
-                });
-                
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-                const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
-                
-                // Konversi teks ke array buffer dan kirim
-                const encoder = new TextEncoder();
-                const data = encoder.encode(content);
-                await characteristic.writeValue(data);
-                
-                showNotification('success', 'Sukses', 'Nota berhasil dikirim ke printer');
-            } catch (error) {
-                console.error('Bluetooth error:', error);
-                showNotification('error', 'Gagal', 'Koneksi printer gagal: ' + error.message);
-            }
-        }
-
-        // Metode 2: Android Intent atau iOS WebKit
-        function printViaIntent(content) {
-            try {
-                // Untuk Android
-                if (window.android && window.android.printToBluetooth) {
-                    window.android.printToBluetooth(content);
-                    return;
-                }
-                
-                // Untuk iOS
-                if (window.webkit && window.webkit.messageHandlers.printToBluetooth) {
-                    window.webkit.messageHandlers.printToBluetooth.postMessage(content);
-                    return;
-                }
-                
-                throw new Error('Fungsi printer tidak tersedia');
-            } catch (error) {
-                console.error('Print error:', error);
-                showNotification('error', 'Gagal', 'Print gagal: ' + error.message);
-            }
-        }
-
-        // Metode 3: Fallback ke print browser biasa
-        function printFallback(notaElement) {
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
+            // Buat iframe untuk mencetak
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.width = '80mm';
+            iframe.style.height = '100%';
+            iframe.style.left = '-1000px';
+            iframe.style.top = '0';
+            iframe.style.border = 'none';
+            
+            document.body.appendChild(iframe);
+            
+            // Salin konten nota ke iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Cetak Nota</title>
+                    <meta charset="UTF-8">
+                    <title>Nota Timbangan</title>
                     <style>
-                        body { 
-                            width: 58mm;
+                        body {
+                            font-family: Arial, sans-serif;
+                            width: 80mm;
                             margin: 0;
-                            padding: 2px;
-                            font-family: Arial;
-                            font-size: 10px;
+                            padding: 0;
+                            font-size: 14px;
+                            line-height: 1.2;
                         }
-                        @page { size: auto; margin: 0; }
+                        .nota-header {
+                            text-align: center;
+                            margin-bottom: 5px;
+                            padding-bottom: 5px;
+                        }
+                        .nota-title {
+                            font-size: 18px;
+                            font-weight: bold;
+                            margin-bottom: 3px;
+                        }
+                        .nota-detail {
+                            margin: 3px 0;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .nota-label {
+                            font-weight: bold;
+                        }
+                        .nota-divider {
+                            border-top: 1px dashed #000;
+                            margin: 5px 0;
+                            padding-top: 5px;
+                        }
+                        .nota-total {
+                            font-weight: bold;
+                            text-align: right;
+                            font-size: 16px;
+                            margin-top: 5px;
+                        }
+                        .nota-footer {
+                            text-align: center;
+                            margin-top: 10px;
+                            font-style: italic;
+                            font-size: 12px;
+                        }
+                        .nota-copy {
+                            margin-bottom: 5px;
+                            font-size: 12px;
+                        }
+                        @page {
+                            size: 80mm auto;
+                            margin: 0;
+                        }
                     </style>
                 </head>
                 <body>
                     ${notaElement.innerHTML}
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                                window.close();
-                            }, 200);
-                        };
-                    </script>
                 </body>
                 </html>
             `);
-            printWindow.document.close();
+            iframeDoc.close();
+            
+            // Fokus ke iframe dan cetak
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                
+                // Hapus iframe setelah mencetak
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    notaElement.style.display = 'none';
+                }, 1000);
+            }, 500);
         }
         
         // Fungsi simpan transaksi
