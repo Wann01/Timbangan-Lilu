@@ -3,18 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nota Timbangan Cengkeh</title>
+    <title>Kalkulator Timbangan Cengkeh</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2e7d32;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .form-group {
             margin-bottom: 15px;
@@ -26,128 +33,167 @@
         }
         input, select {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #2e7d32;
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 12px 20px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
-            margin-top: 10px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #1b5e20;
         }
-        .nota-container {
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 8px;
             display: none;
-            width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 30px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            font-family: 'Arial', sans-serif;
-            page-break-after: always;
         }
+        
+        /* Styles untuk nota cetak */
+        #print-nota {
+            display: none;
+            width: 80mm;
+            margin: 20px auto;
+            padding: 15px;
+            background: white;
+            font-family: Arial, sans-serif;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        
         .nota-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
         }
-        .nota-header h2 {
-            margin: 0;
-            font-size: 28px;
-            color: #333;
+        
+        .nota-title {
+            font-size: 18px;
             font-weight: bold;
+            margin-bottom: 5px;
         }
-        .nota-header p {
-            margin: 8px 0;
-            font-size: 16px;
-        }
+        
         .nota-detail {
-            margin: 30px 0;
-        }
-        .nota-detail p {
-            margin: 15px 0;
+            margin: 8px 0;
             display: flex;
             justify-content: space-between;
-            font-size: 18px;
+            font-size: 14px;
         }
+        
+        .nota-label {
+            font-weight: bold;
+        }
+        
         .nota-divider {
-            border-top: 2px dashed #000;
-            margin: 20px 0;
+            border-top: 1px dashed #000;
+            margin: 10px 0;
         }
+        
         .nota-total {
             font-weight: bold;
-            font-size: 22px;
             text-align: right;
-            margin: 30px 0;
+            font-size: 16px;
+            margin-top: 15px;
         }
+        
         .nota-footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 20px;
             font-style: italic;
-            font-size: 18px;
+            font-size: 12px;
         }
+        
+        .button-group {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
         @media print {
             body * {
                 visibility: hidden;
                 margin: 0;
                 padding: 0;
             }
-            .nota-container, .nota-container * {
+            #print-nota, #print-nota * {
                 visibility: visible;
-                margin: 0;
-                padding: 0;
             }
-            .nota-container {
+            #print-nota {
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 100%;
-                height: 100%;
-                box-shadow: none;
+                width: 80mm !important;
+                height: auto;
+                padding: 10px;
                 border: none;
-                padding: 30px;
-            }
-            .nota-header h2 {
-                font-size: 32px;
-            }
-            .nota-detail p {
-                font-size: 20px;
-                margin: 20px 0;
-            }
-            .nota-total {
-                font-size: 24px;
-                margin: 40px 0;
-            }
-            .nota-footer {
-                margin-top: 60px;
-                font-size: 20px;
+                box-shadow: none;
+                margin: 0;
             }
             .no-print {
-                display: none;
+                display: none !important;
+            }
+            
+            /* Optimasi untuk printer thermal/bluetooth */
+            .nota-title {
+                font-size: 16px !important;
+            }
+            .nota-detail {
+                font-size: 13px !important;
+                margin: 6px 0 !important;
+            }
+            .nota-total {
+                font-size: 15px !important;
+            }
+            .nota-footer {
+                font-size: 11px !important;
+                margin-top: 15px !important;
             }
         }
-        .button-group {
-            margin-top: 20px;
-            text-align: center;
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            input, select {
+                padding: 8px;
+                font-size: 14px;
+            }
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            #print-nota {
+                width: 100%;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container no-print">
-        <h1 style="text-align: center; color: #2e7d32;">Kalkulator Timbangan Cengkeh</h1>
+    <div class="container">
+        <h1>Kalkulator Timbangan Cengkeh</h1>
         
         <div class="form-group">
-            <label for="namaTimbangan">Nama Timbangan:</label>
-            <input type="text" id="namaTimbangan" placeholder="Contoh: Timbangan Jaya Abadi">
+            <label for="nama">Nama Timbangan:</label>
+            <input type="text" id="nama" placeholder="Contoh: Timbangan Jaya Abadi">
         </div>
         
         <div class="form-group">
@@ -176,36 +222,43 @@
         </div>
         
         <div class="button-group no-print">
-            <button onclick="hitungDanTampilkanNota()">Buat Nota</button>
-            <button onclick="resetForm()">Reset Form</button>
+            <button onclick="hitung()">Hitung</button>
+            <button onclick="resetForm()">Reset</button>
+            <button onclick="cetakNota()" id="btn-cetak" style="display:none;">Cetak Nota</button>
+        </div>
+        
+        <div id="hasil" class="result no-print">
+            <h3>Hasil Perhitungan</h3>
+            <p>Total Harga: <span id="totalHarga"></span></p>
         </div>
     </div>
     
-    <div id="nota" class="nota-container">
+    <!-- Nota untuk dicetak -->
+    <div id="print-nota">
         <div class="nota-header">
-            <h2 id="notaNamaTimbangan">Timbangan Cengkeh</h2>
-            <p id="notaAlamat">Alamat</p>
-            <p id="notaHp">No. HP</p>
+            <div class="nota-title" id="nota-nama-timbangan">TOKO TIMBANGAN</div>
+            <p id="nota-alamat">Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</p>
+            <p id="nota-hp">Telp: 0812-3456-7890</p>
         </div>
-        
         <div class="nota-detail">
-            <p><span>Tanggal:</span> <span id="notaTanggal"></span></p>
-            <div class="nota-divider"></div>
-            <p><span>Berat:</span> <span id="notaBerat"></span> kg</p>
-            <p><span>Harga/kg:</span> Rp <span id="notaHarga"></span></p>
-            <div class="nota-divider"></div>
-            <div class="nota-total">
-                Total: Rp <span id="notaTotal"></span>
-            </div>
+            <span class="nota-label">Tanggal:</span>
+            <span id="nota-tanggal"></span>
         </div>
-        
+        <div class="nota-divider"></div>
+        <div class="nota-detail">
+            <span class="nota-label">Berat:</span>
+            <span id="nota-berat"></span> Kg
+        </div>
+        <div class="nota-detail">
+            <span class="nota-label">Harga/Kg:</span>
+            Rp <span id="nota-harga"></span>
+        </div>
+        <div class="nota-divider"></div>
+        <div class="nota-total">
+            TOTAL: Rp <span id="nota-total"></span>
+        </div>
         <div class="nota-footer">
             Terima kasih atas kepercayaan Anda
-        </div>
-        
-        <div class="button-group no-print">
-            <button onclick="cetakNota()">Cetak Nota</button>
-            <button onclick="sembunyikanNota()">Tutup Nota</button>
         </div>
     </div>
 
@@ -213,9 +266,9 @@
         // Set tanggal hari ini sebagai default
         document.getElementById('tanggal').valueAsDate = new Date();
         
-        function hitungDanTampilkanNota() {
+        function hitung() {
             // Ambil nilai dari form
-            const namaTimbangan = document.getElementById('namaTimbangan').value;
+            const nama = document.getElementById('nama').value;
             const alamat = document.getElementById('alamat').value;
             const hp = document.getElementById('hp').value;
             const tanggal = document.getElementById('tanggal').value;
@@ -223,49 +276,142 @@
             const harga = parseInt(document.getElementById('harga').value);
             
             // Validasi input
-            if (!namaTimbangan || !alamat || !hp || !tanggal || isNaN(berat) || isNaN(harga)) {
+            if (!nama || !alamat || !hp || !tanggal || isNaN(berat) || isNaN(harga)) {
                 alert('Harap isi semua field dengan benar!');
+                return;
+            }
+            
+            if (berat <= 0 || harga <= 0) {
+                alert('Berat dan harga harus lebih dari 0');
                 return;
             }
             
             // Hitung total harga
             const total = berat * harga;
             
-            // Isi data nota
-            document.getElementById('notaNamaTimbangan').textContent = namaTimbangan;
-            document.getElementById('notaAlamat').textContent = alamat;
-            document.getElementById('notaHp').textContent = hp;
+            // Tampilkan hasil
+            document.getElementById('totalHarga').textContent = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('hasil').style.display = 'block';
+            document.getElementById('btn-cetak').style.display = 'inline-block';
+            
+            // Isi data untuk nota cetak
+            document.getElementById('nota-nama-timbangan').textContent = nama;
+            document.getElementById('nota-alamat').textContent = alamat;
+            document.getElementById('nota-hp').textContent = hp;
             
             // Format tanggal
             const dateObj = new Date(tanggal);
             const options = { day: '2-digit', month: 'long', year: 'numeric' };
-            document.getElementById('notaTanggal').textContent = dateObj.toLocaleDateString('id-ID', options);
+            document.getElementById('nota-tanggal').textContent = dateObj.toLocaleDateString('id-ID', options);
             
-            document.getElementById('notaBerat').textContent = berat.toFixed(2);
-            document.getElementById('notaHarga').textContent = harga.toLocaleString('id-ID');
-            document.getElementById('notaTotal').textContent = total.toLocaleString('id-ID');
-            
-            // Tampilkan nota
-            document.getElementById('nota').style.display = 'block';
-            window.scrollTo(0, document.body.scrollHeight);
+            document.getElementById('nota-berat').textContent = berat.toFixed(2);
+            document.getElementById('nota-harga').textContent = harga.toLocaleString('id-ID');
+            document.getElementById('nota-total').textContent = total.toLocaleString('id-ID');
         }
         
         function cetakNota() {
-            window.print();
-        }
-        
-        function sembunyikanNota() {
-            document.getElementById('nota').style.display = 'none';
+            // Tampilkan nota sebelum mencetak
+            document.getElementById('print-nota').style.display = 'block';
+            
+            // Buat iframe untuk mencetak
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'absolute';
+            iframe.style.width = '80mm';
+            iframe.style.height = '100%';
+            iframe.style.left = '-1000px';
+            iframe.style.top = '0';
+            iframe.style.border = 'none';
+            
+            document.body.appendChild(iframe);
+            
+            // Salin konten nota ke iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=80mm, initial-scale=1.0">
+                    <title>Nota Timbangan Cengkeh</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            width: 80mm;
+                            margin: 0;
+                            padding: 10px;
+                            font-size: 13px;
+                        }
+                        .nota-header {
+                            text-align: center;
+                            margin-bottom: 8px;
+                            border-bottom: 1px dashed #000;
+                            padding-bottom: 8px;
+                        }
+                        .nota-title {
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-bottom: 4px;
+                        }
+                        .nota-detail {
+                            margin: 6px 0;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .nota-label {
+                            font-weight: bold;
+                        }
+                        .nota-divider {
+                            border-top: 1px dashed #000;
+                            margin: 8px 0;
+                        }
+                        .nota-total {
+                            font-weight: bold;
+                            text-align: right;
+                            font-size: 15px;
+                            margin-top: 12px;
+                        }
+                        .nota-footer {
+                            text-align: center;
+                            margin-top: 15px;
+                            font-style: italic;
+                            font-size: 11px;
+                        }
+                        @page {
+                            size: 80mm auto;
+                            margin: 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${document.getElementById('print-nota').innerHTML}
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+            
+            // Fokus ke iframe dan cetak
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                
+                // Hapus iframe setelah mencetak
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    document.getElementById('print-nota').style.display = 'none';
+                }, 1000);
+            }, 500);
         }
         
         function resetForm() {
-            document.getElementById('namaTimbangan').value = '';
+            document.getElementById('nama').value = '';
             document.getElementById('alamat').value = '';
             document.getElementById('hp').value = '';
             document.getElementById('tanggal').valueAsDate = new Date();
             document.getElementById('berat').value = '';
             document.getElementById('harga').value = '';
-            document.getElementById('nota').style.display = 'none';
+            document.getElementById('hasil').style.display = 'none';
+            document.getElementById('btn-cetak').style.display = 'none';
         }
     </script>
 </body>
