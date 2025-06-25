@@ -598,7 +598,6 @@
             <div class="button-group">
                 <button id="calculate">Hitung</button>
                 <button id="save">Simpan Transaksi</button>
-                <button id="print-bluetooth">Cetak via Bluetooth</button>
                 <button id="reset-day">Reset Hari Ini</button>
             </div>
             
@@ -873,55 +872,6 @@
             confirmBtn.addEventListener('click', handleConfirm);
             cancelBtn.addEventListener('click', handleCancel);
             closeBtn.addEventListener('click', handleCancel);
-        }
-        // Tambahkan event listener untuk tombol Bluetooth
-        document.getElementById('print-bluetooth').addEventListener('click', function() {
-            calculateAndPrint();
-        });
-
-        // Modifikasi fungsi calculateAndPrint untuk opsi Bluetooth
-        function calculateAndPrint() {
-            const price = parseFloat(priceInput.value);
-            const weight = parseFloat(weightInput.value);
-            
-            if (isNaN(weight) || weight <= 0) {
-                showNotification('error', 'Kesalahan', 'Masukkan berat yang valid');
-                return;
-            }
-            
-            const total = price * weight;
-            const now = new Date();
-            
-            // Update nota
-            document.getElementById('nota-date').textContent = now.toLocaleString('id-ID');
-            document.getElementById('nota-number').textContent = 'NOTA-' + now.getTime();
-            document.getElementById('nota-weight').textContent = weight.toFixed(2);
-            document.getElementById('nota-price').textContent = price.toLocaleString('id-ID');
-            document.getElementById('nota-total').textContent = total.toLocaleString('id-ID');
-            
-            // Tampilkan opsi cetak
-            showPrintOptions();
-        }
-
-        function showPrintOptions() {
-            showConfirm(`
-                <p>Total: Rp ${document.getElementById('nota-total').textContent}</p>
-                <p>Pilih metode cetak:</p>
-            `, (confirmed) => {
-                if (confirmed) {
-                    const printType = confirm('Cetak via Bluetooth? (OK untuk Bluetooth, Cancel untuk printer biasa)');
-                    if (printType) {
-                        printNota(); // Akan otomatis deteksi Bluetooth
-                    } else {
-                        printFallback(document.getElementById('print-nota'));
-                    }
-                    
-                    // Tanya apakah ingin simpan transaksi
-                    showConfirm('Simpan transaksi ini?', (save) => {
-                        if (save) saveTransaction();
-                    });
-                }
-            });
         }
         
         // Fungsi hitung dan cetak nota
