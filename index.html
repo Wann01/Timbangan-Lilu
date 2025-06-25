@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         :root {
             --primary-color: #3498db;
@@ -610,6 +611,31 @@
         .modal-btn-danger:hover {
             background-color: var(--danger-hover);
         }
+        /* Tambahan CSS untuk modal berbagi */
+        #share-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #share-button:hover {
+            background-color: #45a049;
+        }
+
+        #share-image-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 480px) {
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .modal-footer button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -658,7 +684,26 @@
             <div class="tab active" onclick="switchTab('current')">Transaksi Hari Ini</div>
             <div class="tab" onclick="switchTab('history')">Riwayat Transaksi</div>
         </div>
-
+        <!-- Modal untuk berbagi nota -->
+        <div class="modal-overlay" id="share-modal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">Bagikan Nota</h3>
+                    <button class="modal-close" id="share-modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="share-image-container" style="text-align: center; margin-bottom: 20px;">
+                        <img id="share-image" src="" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <p class="modal-message">Pilih cara untuk berbagi nota ini:</p>
+                </div>
+                <div class="modal-footer" style="justify-content: space-between;">
+                    <button class="modal-btn modal-btn-cancel" id="share-modal-cancel">Batal</button>
+                    <button class="modal-btn modal-btn-confirm" id="share-download">Simpan Gambar</button>
+                    <button class="modal-btn" id="share-button" style="background-color: #4CAF50; color: white;">Bagikan</button>
+                </div>
+            </div>
+        </div>
         <!-- Current Transactions Tab -->
         <div id="current-tab" class="tab-content active">
             <div class="form-group">
@@ -996,100 +1041,29 @@
         }
         
         // Fungsi untuk mencetak nota
+        // Fungsi untuk mencetak nota dan menghasilkan gambar
         function printNota() {
             const notaElement = document.getElementById('print-nota');
-            
-            // Tampilkan nota sebelum mencetak
             notaElement.style.display = 'block';
             
-            // Buat iframe untuk mencetak
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'absolute';
-            iframe.style.width = '58mm';
-            iframe.style.height = '100%';
-            iframe.style.left = '-1000px';
-            iframe.style.top = '0';
-            iframe.style.border = 'none';
-            
-            document.body.appendChild(iframe);
-            
-            // Salin konten nota ke iframe
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Nota Timbangan</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            width: 80mm;
-                            margin: 0;
-                            padding: 5px;
-                            font-size: 12px;
-                        }
-                        .nota-header {
-                            text-align: center;
-                            margin-bottom: 5px;
-                            border-bottom: 1px dashed #000;
-                            padding-bottom: 5px;
-                        }
-                        .nota-title {
-                            font-size: 16px;
-                            font-weight: bold;
-                            margin-bottom: 3px;
-                        }
-                        .nota-detail {
-                            margin: 3px 0;
-                            display: flex;
-                            justify-content: space-between;
-                        }
-                        .nota-label {
-                            font-weight: bold;
-                        }
-                        .nota-divider {
-                            border-top: 1px dashed #000;
-                            margin: 5px 0;
-                        }
-                        .nota-total {
-                            font-weight: bold;
-                            text-align: right;
-                            font-size: 14px;
-                            margin-top: 5px;
-                        }
-                        .nota-footer {
-                            text-align: center;
-                            margin-top: 10px;
-                            font-style: italic;
-                            font-size: 10px;
-                        }
-                        @page {
-                            size: 80mm auto;
-                            margin: 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${notaElement.innerHTML}
-                </body>
-                </html>
-            `);
-            iframeDoc.close();
-            
-            // Fokus ke iframe dan cetak
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
+            // Gunakan html2canvas untuk mengkonversi nota ke gambar
+            html2canvas(notaElement, {
+                scale: 2, // Kualitas lebih tinggi
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null // Transparan
+            }).then(canvas => {
+                // Sembunyikan elemen nota asli
+                notaElement.style.display = 'none';
                 
-                // Hapus iframe setelah mencetak
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    notaElement.style.display = 'none';
-                }, 1000);
-            }, 500);
+                // Tampilkan modal dengan opsi bagikan
+                showShareModal(canvas.toDataURL('image/png'));
+            }).catch(err => {
+                console.error('Error generating image:', err);
+                notaElement.style.display = 'none';
+                showNotification('error', 'Error', 'Gagal membuat gambar nota');
+            });
         }
         
         // Fungsi simpan transaksi
@@ -1415,6 +1389,74 @@
             doc.save(`Transaksi_Timbangan_${new Date().toISOString().slice(0, 10)}.pdf`);
             
             showNotification('success', 'Sukses', 'Data berhasil diexport ke PDF');
+        }
+        // Fungsi untuk menampilkan modal berbagi
+        function showShareModal(imageDataUrl) {
+            const modal = document.getElementById('share-modal');
+            const imageElement = document.getElementById('share-image');
+            const downloadBtn = document.getElementById('share-download');
+            const shareBtn = document.getElementById('share-button');
+            const cancelBtn = document.getElementById('share-modal-cancel');
+            const closeBtn = document.getElementById('share-modal-close');
+            
+            // Set gambar di modal
+            imageElement.src = imageDataUrl;
+            modal.classList.add('active');
+            
+            // Fungsi untuk download gambar
+            const handleDownload = () => {
+                const link = document.createElement('a');
+                link.download = `nota-timbangan-${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = imageDataUrl;
+                link.click();
+                modal.classList.remove('active');
+            };
+            
+            // Fungsi untuk berbagi gambar
+            const handleShare = () => {
+                if (navigator.share) {
+                    // Web Share API (untuk mobile)
+                    navigator.share({
+                        title: 'Nota Timbangan',
+                        text: 'Berikut adalah nota timbangan dari TOKO TIMBANGAN',
+                        url: imageDataUrl
+                    }).catch(err => {
+                        console.log('Error sharing:', err);
+                        showNotification('error', 'Error', 'Gagal berbagi nota');
+                    });
+                } else if (navigator.clipboard) {
+                    // Copy image to clipboard (untuk browser yang mendukung)
+                    fetch(imageDataUrl)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            navigator.clipboard.write([
+                                new ClipboardItem({
+                                    [blob.type]: blob
+                                })
+                            ]).then(() => {
+                                showNotification('success', 'Sukses', 'Gambar nota disalin ke clipboard');
+                            }).catch(err => {
+                                console.log('Error copying:', err);
+                                fallbackShare();
+                            });
+                        });
+                } else {
+                    fallbackShare();
+                }
+                
+                modal.classList.remove('active');
+            };
+            
+            // Fallback jika Web Share API tidak tersedia
+            const fallbackShare = () => {
+                showNotification('info', 'Info', 'Gunakan menu berbagi dari browser Anda');
+            };
+            
+            // Event listeners
+            downloadBtn.addEventListener('click', handleDownload);
+            shareBtn.addEventListener('click', handleShare);
+            cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
+            closeBtn.addEventListener('click', () => modal.classList.remove('active'));
         }
     </script>
 </body>
