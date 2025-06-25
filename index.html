@@ -3,90 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TUSD THMAHASH - VOLUME 1</title>
+    <title>Kalkulator Timbangan Cengkeh</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
             background-color: #f5f5f5;
         }
-        .document {
-            width: 80%;
-            max-width: 800px;
-            padding: 40px;
-            background-color: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        h1 {
+            color: #2e7d32;
             text-align: center;
         }
-        .header {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            line-height: 1.2;
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .subheader {
-            font-size: 36px;
-            margin-bottom: 40px;
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
         }
-        .content {
-            font-size: 32px;
-            line-height: 1.8;
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            display: none;
+        }
+        #nota {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .nota-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nota-details {
+            margin-bottom: 20px;
+        }
+        .nota-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .nota-table th, .nota-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
-            margin-left: 20%;
         }
-        .footer {
-            font-size: 28px;
-            margin-top: 50px;
-            font-style: italic;
+        .nota-table th {
+            background-color: #f2f2f2;
         }
-        @media print {
-            body {
-                background-color: white;
-            }
-            .document {
-                box-shadow: none;
-                width: 100%;
-                height: 100%;
-                padding: 0;
-                margin: 0;
-            }
+        .nota-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .print-button {
+            background-color: #1565c0;
+        }
+        .print-button:hover {
+            background-color: #0d47a1;
         }
     </style>
 </head>
 <body>
-    <div class="document">
-        <div class="header">TUSD THMAHASH</div>
-        <div class="subheader">VOLUME 1: 2024-07-08</div>
-        <div class="subheader">RESTAURANTES</div>
+    <div class="container">
+        <h1>Kalkulator Timbangan Cengkeh</h1>
         
-        <div class="content">
-            <div>Tender abscrits: &lt;18</div>
-            <div>No. vol. 80/2016/06/01/2024</div>
-            <div>Item 16.5.9</div>
-            <div>Format: 0,233,000</div>
+        <div class="form-group">
+            <label for="tanggal">Tanggal:</label>
+            <input type="date" id="tanggal" required>
         </div>
         
-        <div class="footer">TOTAL BY STEAM</div>
+        <div class="form-group">
+            <label for="namaPembeli">Nama Pembeli:</label>
+            <input type="text" id="namaPembeli" placeholder="Masukkan nama pembeli" required>
+        </div>
         
-        <button onclick="window.print()" style="
-            padding: 15px 30px;
-            font-size: 20px;
-            margin-top: 40px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        ">
-            CETAK DOKUMEN
-        </button>
+        <div class="form-group">
+            <label for="alamatPembeli">Alamat Pembeli:</label>
+            <input type="text" id="alamatPembeli" placeholder="Masukkan alamat pembeli">
+        </div>
+        
+        <div class="form-group">
+            <label for="beratKotor">Berat Kotor (kg):</label>
+            <input type="number" id="beratKotor" step="0.01" placeholder="Masukkan berat kotor" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="persenKotoran">Persentase Kotoran (%):</label>
+            <input type="number" id="persenKotoran" step="0.1" placeholder="Masukkan % kotoran" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="hargaPerKg">Harga per Kg (Rp):</label>
+            <input type="number" id="hargaPerKg" placeholder="Masukkan harga per kg" required>
+        </div>
+        
+        <button id="hitungButton">Hitung</button>
+        
+        <div id="results">
+            <h3>Hasil Perhitungan</h3>
+            <p>Berat Bersih: <span id="beratBersih">0</span> kg</p>
+            <p>Total Harga: Rp <span id="totalHarga">0</span></p>
+            <button id="buatNotaButton">Buat Nota</button>
+        </div>
+        
+        <div id="nota">
+            <div class="nota-header">
+                <h2>NOTA PENJUALAN CENGKEH</h2>
+                <p id="notaTanggal"></p>
+            </div>
+            
+            <div class="nota-details">
+                <p><strong>Kepada:</strong> <span id="notaNamaPembeli"></span></p>
+                <p><strong>Alamat:</strong> <span id="notaAlamatPembeli"></span></p>
+            </div>
+            
+            <table class="nota-table">
+                <thead>
+                    <tr>
+                        <th>Keterangan</th>
+                        <th>Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Berat Kotor</td>
+                        <td><span id="notaBeratKotor"></span> kg</td>
+                    </tr>
+                    <tr>
+                        <td>Persentase Kotoran</td>
+                        <td><span id="notaPersenKotoran"></span>%</td>
+                    </tr>
+                    <tr>
+                        <td>Berat Bersih</td>
+                        <td><span id="notaBeratBersih"></span> kg</td>
+                    </tr>
+                    <tr>
+                        <td>Harga per Kg</td>
+                        <td>Rp <span id="notaHargaPerKg"></span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Harga</strong></td>
+                        <td><strong>Rp <span id="notaTotalHarga"></span></strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="nota-footer">
+                <p>Hormat kami,</p>
+                <p><strong><span id="namaPerusahaan">Nama Perusahaan Anda</span></strong></p>
+                <button class="print-button" id="printButton">Cetak Nota</button>
+            </div>
+        </div>
     </div>
+
+    <script>
+        document.getElementById('hitungButton').addEventListener('click', function() {
+            // Ambil nilai dari form
+            const beratKotor = parseFloat(document.getElementById('beratKotor').value);
+            const persenKotoran = parseFloat(document.getElementById('persenKotoran').value);
+            const hargaPerKg = parseFloat(document.getElementById('hargaPerKg').value);
+            
+            // Validasi input
+            if (isNaN(beratKotor) {
+                alert('Masukkan berat kotor yang valid');
+                return;
+            }
+            
+            if (isNaN(persenKotoran) {
+                alert('Masukkan persentase kotoran yang valid');
+                return;
+            }
+            
+            if (isNaN(hargaPerKg)) {
+                alert('Masukkan harga per kg yang valid');
+                return;
+            }
+            
+            // Hitung berat bersih dan total harga
+            const beratKotoran = beratKotor * (persenKotoran / 100);
+            const beratBersih = beratKotor - beratKotoran;
+            const totalHarga = beratBersih * hargaPerKg;
+            
+            // Tampilkan hasil
+            document.getElementById('beratBersih').textContent = beratBersih.toFixed(2);
+            document.getElementById('totalHarga').textContent = totalHarga.toLocaleString('id-ID');
+            
+            // Tampilkan bagian hasil
+            document.getElementById('results').style.display = 'block';
+        });
+        
+        document.getElementById('buatNotaButton').addEventListener('click', function() {
+            // Ambil nilai dari form
+            const tanggal = document.getElementById('tanggal').value;
+            const namaPembeli = document.getElementById('namaPembeli').value;
+            const alamatPembeli = document.getElementById('alamatPembeli').value;
+            const beratKotor = document.getElementById('beratKotor').value;
+            const persenKotoran = document.getElementById('persenKotoran').value;
+            const hargaPerKg = document.getElementById('hargaPerKg').value;
+            const beratBersih = document.getElementById('beratBersih').textContent;
+            const totalHarga = document.getElementById('totalHarga').textContent;
+            
+            // Format tanggal
+            let formattedDate = '';
+            if (tanggal) {
+                const dateObj = new Date(tanggal);
+                const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                formattedDate = dateObj.toLocaleDateString('id-ID', options);
+            }
+            
+            // Isi nota
+            document.getElementById('notaTanggal').textContent = formattedDate;
+            document.getElementById('notaNamaPembeli').textContent = namaPembeli;
+            document.getElementById('notaAlamatPembeli').textContent = alamatPembeli;
+            document.getElementById('notaBeratKotor').textContent = parseFloat(beratKotor).toFixed(2);
+            document.getElementById('notaPersenKotoran').textContent = persenKotoran;
+            document.getElementById('notaBeratBersih').textContent = beratBersih;
+            document.getElementById('notaHargaPerKg').textContent = parseFloat(hargaPerKg).toLocaleString('id-ID');
+            document.getElementById('notaTotalHarga').textContent = totalHarga;
+            
+            // Tampilkan nota
+            document.getElementById('nota').style.display = 'block';
+        });
+        
+        document.getElementById('printButton').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Set tanggal hari ini sebagai default
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            document.getElementById('tanggal').value = formattedDate;
+        });
+    </script>
 </body>
 </html>
