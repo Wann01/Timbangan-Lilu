@@ -671,7 +671,7 @@
             
             <div class="button-group">
                 <button id="calculate">Hitung & Cetak Nota</button>
-                <button id="save">Simpan Transaksi</button>
+                <button id="save"> Transaksi</button>
                 <button id="reset-day">Reset Hari Ini</button>
             </div>
             
@@ -986,7 +986,7 @@
             printNota();
             
             // Tampilkan konfirmasi untuk menyimpan transaksi
-            showConfirm(`Total: Rp ${total.toLocaleString('id-ID')}<br>Simpan transaksi ini?`, (confirmed) => {
+            showConfirm(`Total: Rp ${total.toLocaleString('id-ID')}<br> transaksi ini?`, (confirmed) => {
                 if (confirmed) {
                     saveTransaction();
                 }
@@ -1088,50 +1088,7 @@
             }, 500);
         }
         
-        // Fungsi simpan transaksi
-        function saveTransaction() {
-            const price = parseFloat(priceInput.value);
-            const weight = parseFloat(weightInput.value);
-            
-            if (isNaN(weight)) {
-                showNotification('error', 'Kesalahan', 'Masukkan berat yang valid');
-                return;
-            }
-            
-            if (weight <= 0) {
-                showNotification('error', 'Kesalahan', 'Berat harus lebih dari 0');
-                return;
-            }
-            
-            const total = price * weight;
-            const transaction = {
-                id: Date.now(),
-                weight,
-                price,
-                total,
-                timestamp: new Date().toISOString()
-            };
-            
-            transactions.push(transaction);
-            dailyTotal += total;
-            transactionCounter++;
-            
-            // Simpan ke localStorage
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            localStorage.setItem('dailyTotal', dailyTotal.toString());
-            localStorage.setItem('transactionCounter', transactionCounter.toString());
-            
-            // Update tampilan
-            updateDailyTotal();
-            renderTransactions();
-            
-            // Reset input berat
-            weightInput.value = '';
-            weightInput.focus();
-            
-            // Tampilkan notifikasi sukses
-            showNotification('success', 'Sukses', 'Transaksi berhasil disimpan');
-        }
+
         
         // Fungsi hapus transaksi
         function deleteTransaction(id) {
