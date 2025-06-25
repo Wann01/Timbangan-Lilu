@@ -3,78 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Timbangan</title>
+    <title>Kalkulator Timbangan - A4</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            width: 80mm; /* Lebar kertas struk */
+            width: 210mm; /* Lebar A4 */
+            height: 297mm; /* Tinggi A4 */
             margin: 0 auto;
-            padding: 5mm;
+            padding: 15mm;
+            box-sizing: border-box;
         }
         .receipt {
             text-align: center;
-            font-size: 14px;
-            line-height: 1.4;
+            font-size: 18px;
+            line-height: 1.6;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .header {
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
+            font-size: 24px;
+            margin-bottom: 15px;
         }
         .address {
-            margin: 5px 0;
-            font-size: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.4;
         }
         .detail {
-            margin: 10px 0;
-            text-align: left;
-            padding-left: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .detail div {
+            margin: 12px 0;
         }
         .total {
             font-weight: bold;
-            font-size: 15px;
-            margin: 10px 0;
+            font-size: 22px;
+            margin: 25px 0;
         }
         .footer {
-            margin-top: 10px;
+            margin-top: 20px;
             font-style: italic;
-            font-size: 12px;
+            font-size: 16px;
+        }
+        .input-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
         input {
             width: 100%;
-            padding: 5px;
-            margin: 5px 0;
-            font-size: 14px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 16px;
+            box-sizing: border-box;
         }
         button {
-            padding: 8px 15px;
-            margin: 5px;
+            padding: 12px 25px;
+            margin: 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
         }
         @media print {
-            button, .no-print {
+            button, .input-section {
                 display: none;
             }
             body {
-                width: 80mm;
+                width: 210mm;
+                height: 297mm;
                 margin: 0;
-                padding: 5mm;
+                padding: 15mm;
             }
+            .receipt {
+                justify-content: flex-start;
+            }
+        }
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
         }
     </style>
 </head>
 <body>
-    <div class="no-print">
-        <h2>Kalkulator Timbangan</h2>
+    <div class="input-section no-print">
+        <h2>Kalkulator Timbangan - Format A4</h2>
         <label for="weight">Berat (Kg):</label>
         <input type="number" id="weight" step="0.01" min="0" value="6.00">
         
         <label for="price">Harga per Kg (Rp):</label>
         <input type="number" id="price" min="0" value="36000">
         
-        <button onclick="calculate()">Hitung</button>
-        <button onclick="window.print()">Cetak Nota</button>
+        <div>
+            <button onclick="calculate()">Hitung</button>
+            <button onclick="window.print()" style="background-color: #2196F3;">Cetak Nota</button>
+        </div>
     </div>
 
     <div class="receipt" id="receipt">
