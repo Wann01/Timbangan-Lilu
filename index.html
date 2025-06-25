@@ -244,28 +244,24 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 30px;
-                font-size: 14px;
+                padding: 10px;
+                font-family: Arial, sans-serif;
             }
-            @page {
-                size: A4 portrait;
-                margin: 1cm;
+            .no-print {
+                display: none !important;
             }
         }
-
 
         #print-nota {
             display: none;
-            width: 100%;
-            max-width: 100%;
-            padding: 20px;
-            margin: 0 auto;
+            border: 1px solid #000;
+            padding: 15px;
+            width: 80mm;
+            margin: 20px auto;
             background: white;
             font-family: Arial, sans-serif;
-            font-size: 14px;
-            box-sizing: border-box;
+            page-break-after: always;
         }
-
 
         .nota-header {
             text-align: center;
