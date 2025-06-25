@@ -7,6 +7,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bluebird@3.7.2/js/browser/bluebird.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/esc-pos-encoder@1.2.1/dist/esc-pos-encoder.min.js"></script>
     <style>
         :root {
             --primary-color: #3498db;
@@ -271,7 +273,7 @@
         }
 
         .nota-title {
-            font-size: 500px;
+            font-size: 18px;
             font-weight: bold;
             margin-bottom: 5px;
         }
@@ -368,7 +370,7 @@
                 box-shadow: none !important;
             }
             .nota-title {
-                font-size: 500px !important;
+                font-size: 16px !important;
             }
             .nota-detail {
                 margin: 3px 0 !important;
@@ -675,6 +677,7 @@
                 <button id="calculate">Hitung & Cetak Nota</button>
                 <button id="save">Simpan Transaksi</button>
                 <button id="reset-day">Reset Hari Ini</button>
+                <button id="connect-bluetooth">Hubung ke Printer</button>
             </div>
             
             <div class="total-section">
@@ -994,103 +997,224 @@
                 }
             });
         }
-        
-        // Fungsi untuk mencetak nota
-        function printNota() {
-            const notaElement = document.getElementById('print-nota');
+        // Bluetooth printing functionality
+        const connectBluetoothBtn = document.getElementById('connect-bluetooth');
+        let bluetoothDevice = null;
+        let bluetoothCharacteristic = null;
+
+        connectBluetoothBtn.addEventListener('click', connectBluetoothPrinter);
+
+        async function connectBluetoothPrinter() {
+            try {
+                showNotification('info', 'Bluetooth', 'Mencari perangkat Bluetooth...');
+                
+                // Filter untuk perangkat printer Bluetooth
+                const options = {
+                    filters: [
+                        { namePrefix: 'Printer' },
+                        { services: ['000018f0-0000-1000-8000-00805f9b34fb'] } // UUID umum untuk printer
+                    ],
+                    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+                };
+                
+                // Minta user memilih perangkat Bluetooth
+                bluetoothDevice = await navigator.bluetooth.requestDevice(options);
+                
+                // Tambahkan event listener untuk disconnect
+                bluetoothDevice.addEventListener('gattserverdisconnected', onBluetoothDisconnected);
+                
+                // Hubungkan ke GATT server
+                showNotification('info', 'Bluetooth', 'Menghubungkan ke printer...');
+                const server = await bluetoothDevice.gatt.connect();
+                
+                // Dapatkan service dan characteristic
+                const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+                bluetoothCharacteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+                
+                showNotification('success', 'Bluetooth', 'Printer terhubung!');
+                connectBluetoothBtn.textContent = 'Printer Terhubung';
+                connectBluetoothBtn.style.backgroundColor = 'var(--success-color)';
+                
+            } catch (error) {
+                console.error('Bluetooth error:', error);
+                showNotification('error', 'Bluetooth Error', error.message);
+                resetBluetoothConnection();
+            }
+        }
+
+        function onBluetoothDisconnected() {
+            showNotification('warning', 'Bluetooth', 'Printer terputus');
+            resetBluetoothConnection();
+        }
+
+        function resetBluetoothConnection() {
+            if (bluetoothDevice) {
+                bluetoothDevice.removeEventListener('gattserverdisconnected', onBluetoothDisconnected);
+                if (bluetoothDevice.gatt.connected) {
+                    bluetoothDevice.gatt.disconnect();
+                }
+            }
+            bluetoothDevice = null;
+            bluetoothCharacteristic = null;
+            connectBluetoothBtn.textContent = 'Hubung ke Printer';
+            connectBluetoothBtn.style.backgroundColor = 'var(--primary-color)';
+        }
+
+        async function printViaBluetooth(content) {
+            if (!bluetoothCharacteristic) {
+                showNotification('error', 'Bluetooth Error', 'Printer belum terhubung');
+                return false;
+            }
             
-            // Tampilkan nota sebelum mencetak
+            try {
+                showNotification('info', 'Bluetooth', 'Mengirim ke printer...');
+                
+                // Encode content ke ESC/POS format
+                const encoder = new EscPosEncoder();
+                const encoded = encoder
+                    .initialize()
+                    .text(content)
+                    .newline()
+                    .newline()
+                    .newline()
+                    .cut('partial')
+                    .encode();
+                
+                // Kirim data ke printer
+                await bluetoothCharacteristic.writeValue(encoded);
+                
+                showNotification('success', 'Bluetooth', 'Nota berhasil dikirim ke printer');
+                return true;
+                
+            } catch (error) {
+                console.error('Print error:', error);
+                showNotification('error', 'Print Error', error.message);
+                return false;
+            }
+        }
+
+        // Modifikasi fungsi printNota untuk menambahkan opsi Bluetooth
+        async function printNota() {
+            const notaElement = document.getElementById('print-nota');
             notaElement.style.display = 'block';
             
-            // Buat iframe untuk mencetak
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'absolute';
-            iframe.style.width = '58mm';
-            iframe.style.height = '100%';
-            iframe.style.left = '-1000px';
-            iframe.style.top = '0';
-            iframe.style.border = 'none';
+            // Format teks untuk printer Bluetooth
+            const notaText = `
+        TOKO TIMBANGAN
+        Desa Kampala, Kec. Eremerasa
+        Kab. Bantaeng
+        Telp: 0812-3456-7890
+        ========================
+        Tanggal: ${document.getElementById('nota-date').textContent}
+        No. Nota: ${document.getElementById('nota-number').textContent}
+        ========================
+        Berat: ${document.getElementById('nota-weight').textContent} Kg
+        Harga/Kg: Rp ${document.getElementById('nota-price').textContent}
+        ========================
+        TOTAL: Rp ${document.getElementById('nota-total').textContent}
+        ========================
+        Terima kasih atas kunjungan Anda
+        `;
             
-            document.body.appendChild(iframe);
+            // Coba cetak via Bluetooth terlebih dahulu
+            const bluetoothPrinted = await printViaBluetooth(notaText);
             
-            // Salin konten nota ke iframe
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Nota Timbangan</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            width: 80mm;
-                            margin: 0;
-                            padding: 5px;
-                            font-size: 12px;
-                        }
-                        .nota-header {
-                            text-align: center;
-                            margin-bottom: 5px;
-                            border-bottom: 1px dashed #000;
-                            padding-bottom: 5px;
-                        }
-                        .nota-title {
-                            font-size: 500px;
-                            font-weight: bold;
-                            margin-bottom: 3px;
-                        }
-                        .nota-detail {
-                            margin: 3px 0;
-                            display: flex;
-                            justify-content: space-between;
-                        }
-                        .nota-label {
-                            font-weight: bold;
-                        }
-                        .nota-divider {
-                            border-top: 1px dashed #000;
-                            margin: 5px 0;
-                        }
-                        .nota-total {
-                            font-weight: bold;
-                            text-align: right;
-                            font-size: 14px;
-                            margin-top: 5px;
-                        }
-                        .nota-footer {
-                            text-align: center;
-                            margin-top: 10px;
-                            font-style: italic;
-                            font-size: 10px;
-                        }
-                        @page {
-                            size: 80mm auto;
-                            margin: 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${notaElement.innerHTML}
-                </body>
-                </html>
-            `);
-            iframeDoc.close();
+            // Jika Bluetooth tidak tersedia, cetak biasa
+            if (!bluetoothPrinted) {
+                // Kode print biasa yang sudah ada
+                const iframe = document.createElement('iframe');
+                    iframe.style.position = 'absolute';
+                    iframe.style.width = '58mm';
+                    iframe.style.height = '100%';
+                    iframe.style.left = '-1000px';
+                    iframe.style.top = '0';
+                    iframe.style.border = 'none';
+                    
+                    document.body.appendChild(iframe);
+                    
+                    // Salin konten nota ke iframe
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Nota Timbangan</title>
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    width: 80mm;
+                                    margin: 0;
+                                    padding: 5px;
+                                    font-size: 12px;
+                                }
+                                .nota-header {
+                                    text-align: center;
+                                    margin-bottom: 5px;
+                                    border-bottom: 1px dashed #000;
+                                    padding-bottom: 5px;
+                                }
+                                .nota-title {
+                                    font-size: 16px;
+                                    font-weight: bold;
+                                    margin-bottom: 3px;
+                                }
+                                .nota-detail {
+                                    margin: 3px 0;
+                                    display: flex;
+                                    justify-content: space-between;
+                                }
+                                .nota-label {
+                                    font-weight: bold;
+                                }
+                                .nota-divider {
+                                    border-top: 1px dashed #000;
+                                    margin: 5px 0;
+                                }
+                                .nota-total {
+                                    font-weight: bold;
+                                    text-align: right;
+                                    font-size: 14px;
+                                    margin-top: 5px;
+                                }
+                                .nota-footer {
+                                    text-align: center;
+                                    margin-top: 10px;
+                                    font-style: italic;
+                                    font-size: 10px;
+                                }
+                                @page {
+                                    size: 80mm auto;
+                                    margin: 0;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            ${notaElement.innerHTML}
+                        </body>
+                        </html>
+                    `);
+                    iframeDoc.close();
+                    
+                    // Fokus ke iframe dan cetak
+                    setTimeout(() => {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        
+                        // Hapus iframe setelah mencetak
+                        setTimeout(() => {
+                            document.body.removeChild(iframe);
+                            notaElement.style.display = 'none';
+                        }, 1000);
+                    }, 500);
+                }
             
-            // Fokus ke iframe dan cetak
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-                
-                // Hapus iframe setelah mencetak
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    notaElement.style.display = 'none';
-                }, 1000);
-            }, 500);
-        }
+            
+            notaElement.style.display = 'none';
+        }        
+
         
         // Fungsi simpan transaksi
         function saveTransaction() {
