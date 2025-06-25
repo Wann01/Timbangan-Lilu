@@ -231,28 +231,8 @@
             display: block;
         }
         
-        /* Styles untuk nota cetak */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #print-nota, #print-nota * {
-                visibility: visible;
-            }
-            #print-nota {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 10px;
-                font-family: Arial, sans-serif;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-
-        #print-nota {
+        /* Styles untuk nota */
+        #nota-container {
             display: none;
             border: 1px solid #000;
             padding: 15px;
@@ -260,7 +240,6 @@
             margin: 20px auto;
             background: white;
             font-family: Arial, sans-serif;
-            page-break-after: always;
         }
 
         .nota-header {
@@ -303,6 +282,36 @@
             margin-top: 15px;
             font-style: italic;
             font-size: 12px;
+        }
+
+        .send-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .send-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .send-btn-wa {
+            background-color: #25D366;
+            color: white;
+        }
+
+        .send-btn-sms {
+            background-color: #34B7F1;
+            color: white;
+        }
+
+        .send-btn-copy {
+            background-color: #6c757d;
+            color: white;
         }
         
         @media (min-width: 768px) {
@@ -347,34 +356,9 @@
                 border-bottom: 1px solid var(--medium-gray);
             }
 
-            #print-nota {
+            #nota-container {
                 width: 100%;
                 padding: 10px;
-            }
-        }
-        /* Tambahan untuk printer bluetooth */
-        @media print {
-            body {
-                width: 80mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                font-size: 12px !important;
-            }
-            #print-nota {
-                width: 100% !important;
-                padding: 5px !important;
-                margin: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
-            .nota-title {
-                font-size: 16px !important;
-            }
-            .nota-detail {
-                margin: 3px 0 !important;
-            }
-            .nota-footer {
-                font-size: 10px !important;
             }
         }
 
@@ -672,7 +656,7 @@
             </div>
             
             <div class="button-group">
-                <button id="calculate">Hitung & Cetak Nota</button>
+                <button id="calculate">Hitung & Kirim Nota</button>
                 <button id="save">Simpan Transaksi</button>
                 <button id="reset-day">Reset Hari Ini</button>
             </div>
@@ -736,8 +720,8 @@
         </div>
     </div>
 
-    <!-- Elemen untuk nota cetak -->
-    <div id="print-nota">
+    <!-- Container untuk nota yang akan dikirim -->
+    <div id="nota-container">
         <div class="nota-header">
             <div class="nota-title">TOKO TIMBANGAN</div>
             <p>Desa Kampala, Kec. Eremerasa, Kab. Bantaeng</p>
@@ -767,6 +751,11 @@
         <div class="nota-footer">
             Terima kasih atas kunjungan Anda
         </div>
+        <div class="send-buttons">
+            <button class="send-btn send-btn-wa" id="send-wa">Kirim ke WA</button>
+            <button class="send-btn send-btn-sms" id="send-sms">Kirim SMS</button>
+            <button class="send-btn send-btn-copy" id="copy-nota">Salin Nota</button>
+        </div>
     </div>
 
     <script>
@@ -789,6 +778,10 @@
         const exportExcelBtn = document.getElementById('export-excel');
         const exportPdfBtn = document.getElementById('export-pdf');
         const historyTable = document.getElementById('history-transactions').getElementsByTagName('tbody')[0];
+        const notaContainer = document.getElementById('nota-container');
+        const sendWaBtn = document.getElementById('send-wa');
+        const sendSmsBtn = document.getElementById('send-sms');
+        const copyNotaBtn = document.getElementById('copy-nota');
         
         // Tampilkan total dan transaksi saat pertama kali load
         updateDailyTotal();
@@ -796,11 +789,14 @@
         renderHistory();
         
         // Event listeners
-        calculateBtn.addEventListener('click', calculateAndPrint);
+        calculateBtn.addEventListener('click', calculateAndSend);
         saveBtn.addEventListener('click', saveTransaction);
         resetBtn.addEventListener('click', resetDay);
         exportExcelBtn.addEventListener('click', exportToExcel);
         exportPdfBtn.addEventListener('click', exportToPdf);
+        sendWaBtn.addEventListener('click', sendViaWhatsApp);
+        sendSmsBtn.addEventListener('click', sendViaSMS);
+        copyNotaBtn.addEventListener('click', copyNotaToClipboard);
         
         // Fungsi untuk berpindah tab
         function switchTab(tabName) {
@@ -950,8 +946,8 @@
             closeBtn.addEventListener('click', handleCancel);
         }
         
-        // Fungsi hitung dan cetak nota
-        function calculateAndPrint() {
+        // Fungsi hitung dan tampilkan nota untuk dikirim
+        function calculateAndSend() {
             const price = parseFloat(priceInput.value);
             const weight = parseFloat(weightInput.value);
             
@@ -984,8 +980,11 @@
             document.getElementById('nota-price').textContent = price.toLocaleString('id-ID');
             document.getElementById('nota-total').textContent = total.toLocaleString('id-ID');
             
-            // Cetak nota
-            printNota();
+            // Tampilkan nota container
+            notaContainer.style.display = 'block';
+            
+            // Scroll ke nota
+            notaContainer.scrollIntoView({ behavior: 'smooth' });
             
             // Tampilkan konfirmasi untuk menyimpan transaksi
             showConfirm(`Total: Rp ${total.toLocaleString('id-ID')}<br>Simpan transaksi ini?`, (confirmed) => {
@@ -995,101 +994,54 @@
             });
         }
         
-        // Fungsi untuk mencetak nota
-        function printNota() {
-            const notaElement = document.getElementById('print-nota');
+        // Fungsi untuk mengirim nota via WhatsApp
+        function sendViaWhatsApp() {
+            const notaContent = generateNotaText();
+            const phoneNumber = prompt("Masukkan nomor WhatsApp (format: 6281234567890):");
             
-            // Tampilkan nota sebelum mencetak
-            notaElement.style.display = 'block';
+            if (phoneNumber) {
+                const encodedMessage = encodeURIComponent(notaContent);
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+                showNotification('success', 'Berhasil', 'Nota siap dikirim via WhatsApp');
+            }
+        }
+        
+        // Fungsi untuk mengirim nota via SMS
+        function sendViaSMS() {
+            const notaContent = generateNotaText();
+            const phoneNumber = prompt("Masukkan nomor telepon (format: 081234567890):");
             
-            // Buat iframe untuk mencetak
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'absolute';
-            iframe.style.width = '58mm';
-            iframe.style.height = '100%';
-            iframe.style.left = '-1000px';
-            iframe.style.top = '0';
-            iframe.style.border = 'none';
+            if (phoneNumber) {
+                const smsUrl = `sms:${phoneNumber}?body=${encodeURIComponent(notaContent)}`;
+                window.location.href = smsUrl;
+            }
+        }
+        
+        // Fungsi untuk menyalin nota ke clipboard
+        function copyNotaToClipboard() {
+            const notaContent = generateNotaText();
             
-            document.body.appendChild(iframe);
+            navigator.clipboard.writeText(notaContent).then(() => {
+                showNotification('success', 'Berhasil', 'Nota telah disalin ke clipboard');
+            }).catch(err => {
+                showNotification('error', 'Gagal', 'Gagal menyalin nota: ' + err);
+            });
+        }
+        
+        // Fungsi untuk menghasilkan teks nota
+        function generateNotaText() {
+            const title = "TOKO TIMBANGAN";
+            const address = "Desa Kampala, Kec. Eremerasa, Kab. Bantaeng";
+            const phone = "Telp: 0812-3456-7890";
+            const date = document.getElementById('nota-date').textContent;
+            const number = document.getElementById('nota-number').textContent;
+            const weight = document.getElementById('nota-weight').textContent;
+            const price = document.getElementById('nota-price').textContent;
+            const total = document.getElementById('nota-total').textContent;
+            const footer = "Terima kasih atas kunjungan Anda";
             
-            // Salin konten nota ke iframe
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Nota Timbangan</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            width: 80mm;
-                            margin: 0;
-                            padding: 5px;
-                            font-size: 12px;
-                        }
-                        .nota-header {
-                            text-align: center;
-                            margin-bottom: 5px;
-                            border-bottom: 1px dashed #000;
-                            padding-bottom: 5px;
-                        }
-                        .nota-title {
-                            font-size: 16px;
-                            font-weight: bold;
-                            margin-bottom: 3px;
-                        }
-                        .nota-detail {
-                            margin: 3px 0;
-                            display: flex;
-                            justify-content: space-between;
-                        }
-                        .nota-label {
-                            font-weight: bold;
-                        }
-                        .nota-divider {
-                            border-top: 1px dashed #000;
-                            margin: 5px 0;
-                        }
-                        .nota-total {
-                            font-weight: bold;
-                            text-align: right;
-                            font-size: 14px;
-                            margin-top: 5px;
-                        }
-                        .nota-footer {
-                            text-align: center;
-                            margin-top: 10px;
-                            font-style: italic;
-                            font-size: 10px;
-                        }
-                        @page {
-                            size: 80mm auto;
-                            margin: 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${notaElement.innerHTML}
-                </body>
-                </html>
-            `);
-            iframeDoc.close();
-            
-            // Fokus ke iframe dan cetak
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-                
-                // Hapus iframe setelah mencetak
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    notaElement.style.display = 'none';
-                }, 1000);
-            }, 500);
+            return `${title}\n${address}\n${phone}\n\nTanggal: ${date}\nNo. Nota: ${number}\n\nBerat: ${weight} Kg\nHarga/Kg: Rp ${price}\n\nTOTAL: Rp ${total}\n\n${footer}`;
         }
         
         // Fungsi simpan transaksi
