@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Timbangan Cengkeh</title>
+    <title>Nota Timbangan Cengkeh</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -11,10 +11,6 @@
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
-        }
-        h1 {
-            color: #2e7d32;
-            text-align: center;
         }
         .container {
             background-color: white;
@@ -38,7 +34,7 @@
             box-sizing: border-box;
         }
         button {
-            background-color: #2e7d32;
+            background-color: #4CAF50;
             color: white;
             border: none;
             padding: 10px 15px;
@@ -46,37 +42,72 @@
             cursor: pointer;
             font-size: 16px;
             margin-right: 10px;
+            margin-top: 10px;
         }
         button:hover {
-            background-color: #1b5e20;
+            background-color: #45a049;
         }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e8f5e9;
-            border-radius: 4px;
+        .nota-container {
             display: none;
-        }
-        .print-area {
-            border: 1px dashed #ccc;
+            margin-top: 30px;
+            border: 2px solid #000;
             padding: 20px;
-            margin-top: 20px;
+            max-width: 400px;
             background-color: white;
-            display: none;
+            font-family: 'Courier New', monospace;
+        }
+        .nota-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nota-header h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+        .nota-header p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .nota-detail {
+            margin-bottom: 15px;
+        }
+        .nota-detail p {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .nota-divider {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+        .nota-total {
+            font-weight: bold;
+            font-size: 18px;
+            text-align: right;
+            margin-top: 15px;
+        }
+        .nota-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+            font-size: 14px;
         }
         @media print {
             body * {
                 visibility: hidden;
             }
-            .print-area, .print-area * {
+            .nota-container, .nota-container * {
                 visibility: visible;
             }
-            .print-area {
+            .nota-container {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
                 border: none;
+                padding: 0;
+                margin: 0;
             }
             .no-print {
                 display: none;
@@ -89,21 +120,21 @@
 </head>
 <body>
     <div class="container">
-        <h1>Kalkulator Timbangan Cengkeh</h1>
+        <h1 style="text-align: center; color: #2e7d32;">Kalkulator Timbangan Cengkeh</h1>
         
         <div class="form-group">
-            <label for="nama">Nama Timbangan:</label>
-            <input type="text" id="nama" placeholder="Masukkan nama timbangan">
+            <label for="namaTimbangan">Nama Timbangan:</label>
+            <input type="text" id="namaTimbangan" placeholder="Contoh: Timbangan Jaya Abadi">
         </div>
         
         <div class="form-group">
             <label for="alamat">Alamat:</label>
-            <input type="text" id="alamat" placeholder="Masukkan alamat">
+            <input type="text" id="alamat" placeholder="Contoh: Jl. Cengkeh No. 123">
         </div>
         
         <div class="form-group">
             <label for="hp">No. HP:</label>
-            <input type="text" id="hp" placeholder="Masukkan nomor HP">
+            <input type="text" id="hp" placeholder="Contoh: 081234567890">
         </div>
         
         <div class="form-group">
@@ -113,42 +144,44 @@
         
         <div class="form-group">
             <label for="berat">Berat (kg):</label>
-            <input type="number" id="berat" placeholder="Masukkan berat dalam kg" step="0.01">
+            <input type="number" id="berat" placeholder="Contoh: 12.5" step="0.01">
         </div>
         
         <div class="form-group">
             <label for="harga">Harga per kg (Rp):</label>
-            <input type="number" id="harga" placeholder="Masukkan harga per kg">
+            <input type="number" id="harga" placeholder="Contoh: 50000">
         </div>
         
         <div class="button-group no-print">
-            <button onclick="hitung()">Hitung</button>
-            <button onclick="resetForm()">Reset</button>
+            <button onclick="hitungDanTampilkanNota()">Buat Nota</button>
+            <button onclick="resetForm()">Reset Form</button>
         </div>
         
-        <div id="hasil" class="result">
-            <h3>Hasil Perhitungan</h3>
-            <p>Total Harga: <span id="totalHarga"></span></p>
-            <button onclick="tampilkanCetak()" class="no-print">Cetak Hasil</button>
-        </div>
-        
-        <div id="printArea" class="print-area">
-            <h2 style="text-align: center; color: #2e7d32;">NOTA TIMBANGAN CENGKEH</h2>
-            <hr>
-            <p><strong>Nama Timbangan:</strong> <span id="printNama"></span></p>
-            <p><strong>Alamat:</strong> <span id="printAlamat"></span></p>
-            <p><strong>No. HP:</strong> <span id="printHp"></span></p>
-            <p><strong>Tanggal:</strong> <span id="printTanggal"></span></p>
-            <hr>
-            <p><strong>Berat:</strong> <span id="printBerat"></span> kg</p>
-            <p><strong>Harga per kg:</strong> Rp <span id="printHarga"></span></p>
-            <hr>
-            <h3 style="text-align: right;">Total: Rp <span id="printTotal"></span></h3>
-            <p style="text-align: center; margin-top: 50px;">Terima kasih atas kepercayaan Anda</p>
+        <div id="nota" class="nota-container">
+            <div class="nota-header">
+                <h2 id="notaNamaTimbangan">Timbangan Cengkeh</h2>
+                <p id="notaAlamat">Alamat</p>
+                <p id="notaHp">No. HP</p>
+            </div>
+            
+            <div class="nota-detail">
+                <p><span>Tanggal:</span> <span id="notaTanggal"></span></p>
+                <div class="nota-divider"></div>
+                <p><span>Berat:</span> <span id="notaBerat"></span> kg</p>
+                <p><span>Harga/kg:</span> Rp <span id="notaHarga"></span></p>
+                <div class="nota-divider"></div>
+                <div class="nota-total">
+                    Total: Rp <span id="notaTotal"></span>
+                </div>
+            </div>
+            
+            <div class="nota-footer">
+                Terima kasih atas kepercayaan Anda
+            </div>
             
             <div class="button-group no-print">
-                <button onclick="cetak()">Cetak Sekarang</button>
-                <button onclick="sembunyikanCetak()">Kembali</button>
+                <button onclick="cetakNota()">Cetak Nota</button>
+                <button onclick="sembunyikanNota()">Tutup Nota</button>
             </div>
         </div>
     </div>
@@ -157,9 +190,9 @@
         // Set tanggal hari ini sebagai default
         document.getElementById('tanggal').valueAsDate = new Date();
         
-        function hitung() {
+        function hitungDanTampilkanNota() {
             // Ambil nilai dari form
-            const nama = document.getElementById('nama').value;
+            const namaTimbangan = document.getElementById('namaTimbangan').value;
             const alamat = document.getElementById('alamat').value;
             const hp = document.getElementById('hp').value;
             const tanggal = document.getElementById('tanggal').value;
@@ -167,7 +200,7 @@
             const harga = parseInt(document.getElementById('harga').value);
             
             // Validasi input
-            if (!nama || !alamat || !hp || !tanggal || isNaN(berat) || isNaN(harga)) {
+            if (!namaTimbangan || !alamat || !hp || !tanggal || isNaN(berat) || isNaN(harga)) {
                 alert('Harap isi semua field dengan benar!');
                 return;
             }
@@ -175,50 +208,40 @@
             // Hitung total harga
             const total = berat * harga;
             
-            // Tampilkan hasil
-            document.getElementById('totalHarga').textContent = 'Rp ' + total.toLocaleString('id-ID');
-            
-            // Isi data untuk cetak
-            document.getElementById('printNama').textContent = nama;
-            document.getElementById('printAlamat').textContent = alamat;
-            document.getElementById('printHp').textContent = hp;
+            // Isi data nota
+            document.getElementById('notaNamaTimbangan').textContent = namaTimbangan;
+            document.getElementById('notaAlamat').textContent = alamat;
+            document.getElementById('notaHp').textContent = hp;
             
             // Format tanggal
             const dateObj = new Date(tanggal);
             const options = { day: '2-digit', month: 'long', year: 'numeric' };
-            document.getElementById('printTanggal').textContent = dateObj.toLocaleDateString('id-ID', options);
+            document.getElementById('notaTanggal').textContent = dateObj.toLocaleDateString('id-ID', options);
             
-            document.getElementById('printBerat').textContent = berat.toFixed(2);
-            document.getElementById('printHarga').textContent = harga.toLocaleString('id-ID');
-            document.getElementById('printTotal').textContent = total.toLocaleString('id-ID');
+            document.getElementById('notaBerat').textContent = berat.toFixed(2);
+            document.getElementById('notaHarga').textContent = harga.toLocaleString('id-ID');
+            document.getElementById('notaTotal').textContent = total.toLocaleString('id-ID');
             
-            // Tampilkan hasil
-            document.getElementById('hasil').style.display = 'block';
+            // Tampilkan nota
+            document.getElementById('nota').style.display = 'block';
         }
         
-        function tampilkanCetak() {
-            document.getElementById('hasil').style.display = 'none';
-            document.getElementById('printArea').style.display = 'block';
-        }
-        
-        function sembunyikanCetak() {
-            document.getElementById('printArea').style.display = 'none';
-            document.getElementById('hasil').style.display = 'block';
-        }
-        
-        function cetak() {
+        function cetakNota() {
             window.print();
         }
         
+        function sembunyikanNota() {
+            document.getElementById('nota').style.display = 'none';
+        }
+        
         function resetForm() {
-            document.getElementById('nama').value = '';
+            document.getElementById('namaTimbangan').value = '';
             document.getElementById('alamat').value = '';
             document.getElementById('hp').value = '';
             document.getElementById('tanggal').valueAsDate = new Date();
             document.getElementById('berat').value = '';
             document.getElementById('harga').value = '';
-            document.getElementById('hasil').style.display = 'none';
-            document.getElementById('printArea').style.display = 'none';
+            document.getElementById('nota').style.display = 'none';
         }
     </script>
 </body>
